@@ -1058,6 +1058,9 @@
       "hours": "Mon–Fri · 9am–7pm (Global)",
       "studioLocation": "Remote-first · serving 47+ countries",
       "mapPlaceholderText": "Remote studio · serving worldwide"
+    },
+    "socialLinks": {
+      "instagram": ""
     }
   }
 }
