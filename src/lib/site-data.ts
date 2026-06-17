@@ -1175,4 +1175,37 @@ export const DEFAULT_INTERACTIVE_GALLERY: InteractiveGalleryItem[] = [
   },
 ];
 
+const ASSET_MAPPING: Record<string, string> = {
+  "/src/assets/hero-fantasy.jpg": heroFantasy,
+  "/src/assets/portfolio-cover-1.jpg": cover1,
+  "/src/assets/portfolio-cover-2.jpg": cover2,
+  "/src/assets/portfolio-cover-3.jpg": cover3,
+  "/src/assets/portfolio-map-1.jpg": map1,
+  "/src/assets/portfolio-map-2.jpg": map2,
+  "/src/assets/portfolio-char-1.jpg": char1,
+  "/src/assets/portfolio-char-2.jpg": char2,
+  "/src/assets/portfolio-char-3.jpg": char3,
+  "/src/assets/portfolio-brand-1.jpg": brand1,
+  "/src/assets/portfolio-web-1.jpg": web1,
+  "/src/assets/portfolio-social-1.jpg": social1,
+  "/src/assets/artist-emily.jpg": emily,
+  "/src/assets/artist-luna.jpg": luna,
+  "/src/assets/artist-isabella.jpg": isabella,
+  "/src/assets/artist-noah.jpg": noah,
+  "/src/assets/artist-sophia.jpg": sophia,
+  "/src/assets/artist-ella.jpg": ella,
+  "/src/assets/cover1-sketch.png": cover1Sketch,
+  "/src/assets/char1-lineart.png": char1Lineart,
+  "/src/assets/map1-draft.png": map1Draft,
+  "/src/assets/char2-concept.png": char2Concept,
+};
+
+export function resolveImageUrl(url: string | undefined): string {
+  if (!url) return "";
+  if (url.startsWith("/src/assets/")) {
+    return ASSET_MAPPING[url] || url;
+  }
+  return url;
+}
+
 

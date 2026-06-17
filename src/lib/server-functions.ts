@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Artist, PortfolioItem, GlobalReview, UserAccount, InteractiveGalleryItem, SiteConfig } from "./site-data";
+import { resolveImageUrl } from "./site-data";
 import { readDb, writeDb, hashPassword, verifyPassword } from "./db";
 
 // Fetch dynamic site data (artists, portfolio items, and global reviews)
@@ -8,10 +9,30 @@ export const getSiteData = createServerFn({ method: "GET" })
   .handler(async () => {
     try {
       const db = await readDb();
+      
+      const team = (db.team || []).map(artist => ({
+        ...artist,
+        image: resolveImageUrl(artist.image),
+        showcaseBeforeImg: resolveImageUrl(artist.showcaseBeforeImg),
+        showcaseAfterImg: resolveImageUrl(artist.showcaseAfterImg),
+        portfolio: (artist.portfolio || []).map((img: string) => resolveImageUrl(img)),
+      }));
+
+      const portfolio = (db.portfolio || []).map(item => ({
+        ...item,
+        image: resolveImageUrl(item.image),
+      }));
+
+      const interactiveGallery = (db.interactiveGallery || []).map(item => ({
+        ...item,
+        beforeImage: resolveImageUrl(item.beforeImage),
+        afterImage: resolveImageUrl(item.afterImage),
+      }));
+
       return {
         success: true,
-        team: db.team,
-        portfolio: db.portfolio,
+        team,
+        portfolio,
         reviews: db.reviews,
         users: (db.users || []).map((u) => ({
           id: u.id,
@@ -21,7 +42,7 @@ export const getSiteData = createServerFn({ method: "GET" })
           name: u.name,
           email: u.email,
         })),
-        interactiveGallery: db.interactiveGallery || [],
+        interactiveGallery,
         siteConfig: db.siteConfig || null,
       };
     } catch (error: any) {
@@ -83,7 +104,14 @@ export const saveArtist = createServerFn({ method: "POST" })
         }
         
         await writeDb(db);
-        return { success: true, artist: artistData as Artist };
+        const resolvedArtist = {
+          ...artistData,
+          image: resolveImageUrl(artistData.image),
+          showcaseBeforeImg: resolveImageUrl(artistData.showcaseBeforeImg),
+          showcaseAfterImg: resolveImageUrl(artistData.showcaseAfterImg),
+          portfolio: (artistData.portfolio || []).map((img: string) => resolveImageUrl(img)),
+        };
+        return { success: true, artist: resolvedArtist as Artist };
       } catch (error: any) {
         console.error("Server function saveArtist error:", error);
         return { success: false, message: error.message || "Failed to save artist profile" };
@@ -121,7 +149,11 @@ export const savePortfolioItem = createServerFn({ method: "POST" })
       }
       
       await writeDb(db);
-      return { success: true, item: item as PortfolioItem };
+      const resolvedItem = {
+        ...item,
+        image: resolveImageUrl(item.image)
+      };
+      return { success: true, item: resolvedItem as PortfolioItem };
     } catch (error: any) {
       console.error("Server function savePortfolioItem error:", error);
       return { success: false, message: error.message || "Failed to save portfolio item" };
