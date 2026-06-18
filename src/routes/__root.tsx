@@ -205,7 +205,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SiteDataProvider>
         <LeadModalProvider>
-          <div className="relative min-h-screen flex flex-col">
+          <div className="relative min-h-screen flex flex-col overflow-x-hidden max-w-full">
             <Navbar />
             <main className="flex-1">
               <Outlet />

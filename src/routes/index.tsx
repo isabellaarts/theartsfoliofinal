@@ -314,7 +314,7 @@ function WhyChooseUs() {
     },
   ];
   return (
-    <section className="relative py-24 md:py-32">
+    <section className="relative py-24 md:py-32 overflow-hidden">
       <GradientOrb className="top-0 left-1/4 h-96 w-96 bg-brand-violet/40" />
       <div className="mx-auto max-w-7xl px-5 lg:px-10">
         <SectionHeading
