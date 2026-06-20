@@ -173,6 +173,7 @@ export const Route = createFileRoute("/api/submit")({
               body: JSON.stringify({
                 sender: { name: "The Arts Folio Custom Forms", email: "info@theartsfolio.com" },
                 to: [{ email: "info@theartsfolio.com", name: "The Arts Folio Admin" }],
+                replyTo: email ? { email, name: name || "User" } : undefined,
                 subject: `[${formType}] ${subject} from ${name || data.name || "User"}`,
                 htmlContent,
                 attachment: emailAttachments.length > 0 ? emailAttachments : undefined
