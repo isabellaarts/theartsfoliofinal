@@ -161,6 +161,11 @@ export function initDb(): Promise<void> {
               a.ctaButton2Label = "Book a Free Consultation";
               migrated = true;
             }
+
+            if (!a.passcode) {
+              a.passcode = "1234";
+              migrated = true;
+            }
           });
         }
 

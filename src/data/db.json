@@ -137,7 +137,8 @@
           "description": "Premium illustrated wrap-around cover with source files",
           "price": "$899"
         }
-      ]
+      ],
+      "passcode": "9642"
     },
     {
       "slug": "luna",
@@ -228,7 +229,8 @@
           "description": "Continent or world-scale illustrated parchment map",
           "price": "$799"
         }
-      ]
+      ],
+      "passcode": "0022"
     },
     {
       "slug": "isabella",
@@ -320,7 +322,8 @@
           "description": "Turnaround sheet showing character from multiple angles",
           "price": "$599"
         }
-      ]
+      ],
+      "passcode": "1234"
     },
     {
       "slug": "noah",
@@ -413,7 +416,8 @@
           "description": "High-converting responsive landing page layout",
           "price": "$1,499"
         }
-      ]
+      ],
+      "passcode": "1234"
     },
     {
       "slug": "sophia",
@@ -505,7 +509,8 @@
           "description": "Full-color illustrated spread for children's books",
           "price": "$449"
         }
-      ]
+      ],
+      "passcode": "1234"
     },
     {
       "slug": "ella",
@@ -597,7 +602,8 @@
           "description": "Custom animated transitions, screens, and overlays",
           "price": "$599"
         }
-      ]
+      ],
+      "passcode": "2345"
     },
     {
       "slug": "haelyn",
@@ -643,7 +649,8 @@
           "description": "Bespoke illustrations based on your creative brief",
           "price": "Custom Quote"
         }
-      ]
+      ],
+      "passcode": "1234"
     }
   ],
   "portfolio": [

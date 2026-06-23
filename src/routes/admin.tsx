@@ -434,7 +434,8 @@ function ArtistsPanel() {
       portfolio: [],
       reviews: [],
       faqs: [],
-      services: ["book-covers"]
+      services: ["book-covers"],
+      passcode: "1234"
     });
     setSkillsStr("");
     setFaqsList([]);
@@ -538,11 +539,17 @@ function ArtistsPanel() {
       ctaTitle: formData.ctaTitle || "",
       ctaDescription: formData.ctaDescription || "",
       ctaButton1Label: formData.ctaButton1Label || "Hire This Artist",
-      ctaButton2Label: formData.ctaButton2Label || "Book a Free Consultation"
+      ctaButton2Label: formData.ctaButton2Label || "Book a Free Consultation",
+      passcode: formData.passcode || "1234"
     };
 
     if (!finalArtistData.slug || !finalArtistData.name) {
       toast.error("Name and unique slug are required");
+      return;
+    }
+
+    if (finalArtistData.passcode && !/^\d{4}$/.test(finalArtistData.passcode)) {
+      toast.error("Profile passcode must be exactly a 4-digit number (e.g. 1234)");
       return;
     }
 
@@ -652,6 +659,25 @@ function ArtistsPanel() {
                 </label>
                 <span className="text-[11px] text-muted-foreground">Select local file. Stored dynamically.</span>
               </div>
+            </div>
+
+            {/* Profile Passcode Field */}
+            <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.02]">
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                Profile Lock Passcode (4-digit code)
+              </label>
+              <input
+                required
+                type="text"
+                maxLength={4}
+                placeholder="e.g. 1234"
+                value={formData.passcode || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, passcode: e.target.value.replace(/\D/g, "") }))}
+                className="w-full max-w-[200px] rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-violet/50 text-white font-mono tracking-[0.2em]"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Clients must enter this 4-digit code to view your public profile. Default passcode is <code className="text-brand-pink font-semibold">1234</code>.
+              </p>
             </div>
 
             <div>

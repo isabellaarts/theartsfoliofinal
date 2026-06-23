@@ -25,6 +25,7 @@ export const Route = createFileRoute("/artists/")({
 
 function ArtistsPage() {
   const { artists } = useSiteData();
+
   return (
     <>
       <section className="relative pt-36 pb-16 overflow-hidden">

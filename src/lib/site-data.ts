@@ -626,6 +626,7 @@ export interface Artist {
   ctaDescription?: string;
   ctaButton1Label?: string;
   ctaButton2Label?: string;
+  passcode?: string;
 }
 
 const social = (handle: string) => ({

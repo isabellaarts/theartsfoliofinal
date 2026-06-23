@@ -20,8 +20,10 @@ import {
   Linkedin,
   Sparkles,
   Globe,
+  Lock,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import { useLeadModal } from "@/components/site/LeadModalContext";
@@ -80,8 +82,8 @@ export const Route = createFileRoute("/artists/$artist")({
   notFoundComponent: () => (
     <div className="pt-36 pb-20 text-center">
       <h1 className="font-display text-4xl">Artist not found</h1>
-      <Link to="/artists" className="mt-6 inline-block text-gradient">
-        ← Back to artists
+      <Link to="/" className="mt-6 inline-block text-gradient">
+        ← Back to home
       </Link>
     </div>
   ),
@@ -92,10 +94,43 @@ const CATEGORIES = ["All", "Covers", "Characters", "Maps", "Branding"];
 
 function ArtistPage() {
   const { artist: loaderArtist } = Route.useLoaderData();
-  const { artists } = useSiteData();
+  const { artists, user } = useSiteData();
   
   // Dynamic client lookup to refresh instantly when edited on the dashboard
   const artist = artists.find((a) => a.slug === loaderArtist.slug) || loaderArtist;
+  const isAdmin = user?.role === "admin";
+
+  const [unlocked, setUnlocked] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [enteredCode, setEnteredCode] = useState("");
+  const [passcodeError, setPasscodeError] = useState("");
+  const [shake, setShake] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== "undefined") {
+      const isUnlocked = localStorage.getItem("arts_folio_unlocked_" + artist.slug) === "true";
+      setUnlocked(isUnlocked);
+    }
+  }, [artist.slug]);
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    const correctCode = artist.passcode || "1234";
+    if (enteredCode === correctCode) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("arts_folio_unlocked_" + artist.slug, "true");
+      }
+      setUnlocked(true);
+      setPasscodeError("");
+      toast.success("Profile unlocked successfully!");
+    } else {
+      setPasscodeError("Incorrect passcode. Please try again.");
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+      toast.error("Invalid passcode");
+    }
+  };
   
   const [filter, setFilter] = useState("All");
   const services = SERVICES.filter((s) => artist.services?.includes(s.slug) || []);
@@ -129,6 +164,113 @@ function ArtistPage() {
   // Dynamic categories based on actual categories present in this artist's portfolio
   const categoriesList = ["All", ...Array.from(new Set(sortedItems.map((item) => item.category)))];
   const items = filter === "All" ? sortedItems : sortedItems.filter((p) => p.category === filter);
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full bg-white/5" />
+          <div className="h-4 w-32 rounded bg-white/5" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin && !unlocked) {
+    return (
+      <div className="relative min-h-screen bg-background pt-32 pb-24 overflow-hidden flex items-center justify-center">
+        <style>{`
+          @keyframes shake-anim {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+          }
+          .shake-active {
+            animation: shake-anim 0.4s cubic-bezier(.36,.07,.19,.97) both;
+          }
+        `}</style>
+        <div className="absolute inset-0 -z-10 bg-radial-glow opacity-30" />
+        <div
+          className="absolute inset-0 -z-10 opacity-10 blur-3xl"
+          style={{
+            backgroundImage: `url(${artist.image})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        
+        <div className="mx-auto max-w-xl w-full px-5 flex flex-col items-center">
+          <Link
+            to="/artists"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors self-start"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to artists
+          </Link>
+
+          <GlassCard className="w-full p-8 md:p-10 border-white/10 relative shadow-glow text-center overflow-hidden group">
+            {/* Top glowing radial blur behind photo */}
+            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-gradient-brand rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
+            
+            {/* Artist Profile Photo with premium circular styling and glow */}
+            <div className="relative mx-auto w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-pink mb-6 shadow-glow hover:scale-105 transition-transform duration-500">
+              <img
+                src={artist.image}
+                alt={artist.name}
+                className="w-full h-full rounded-full object-cover border-2 border-background"
+              />
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center shadow-glow border border-background">
+                <Lock className="h-4 w-4 text-white" />
+              </div>
+            </div>
+            
+            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-white mb-1">
+              {artist.name}
+            </h1>
+            
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-1 text-xs uppercase tracking-widest text-brand-pink mb-6">
+              <Sparkles className="h-3 w-3" /> {artist.specialization}
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto mb-8">
+              Verified team member at <span className="text-white font-semibold">The Arts Folio</span>. Enter the 4-digit client passcode shared by the artist to view their full portfolio, custom rates, and interactive process galleries.
+            </p>
+            
+            <form onSubmit={handleUnlock} className="space-y-6 max-w-sm mx-auto">
+              <div className={shake ? "shake-active" : ""}>
+                <input
+                  required
+                  type="password"
+                  maxLength={4}
+                  placeholder="••••"
+                  value={enteredCode}
+                  onChange={(e) => {
+                    setEnteredCode(e.target.value.replace(/\D/g, ""));
+                    setPasscodeError("");
+                  }}
+                  className={`w-full max-w-[200px] text-center text-3xl tracking-[0.7em] pl-6 font-mono rounded-2xl bg-white/5 border px-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-violet/50 transition-all ${
+                    passcodeError ? "border-brand-pink/50 text-brand-pink focus:ring-brand-pink/50" : "border-white/10"
+                  }`}
+                  autoFocus
+                />
+                {passcodeError && (
+                  <p className="text-xs text-brand-pink mt-3 font-medium animate-fade-up">
+                    {passcodeError}
+                  </p>
+                )}
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full rounded-full bg-gradient-brand px-6 py-4 text-sm font-semibold text-white shadow-glow hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(157,78,221,0.6)] transition-all cursor-pointer"
+              >
+                Unlock & View Profile
+              </button>
+            </form>
+          </GlassCard>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
