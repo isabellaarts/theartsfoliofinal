@@ -25,6 +25,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as ArtistsIndexRouteImport } from './routes/artists.index'
+import { Route as UploadsFilenameRouteImport } from './routes/uploads.$filename'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ArtistsArtistRouteImport } from './routes/artists.$artist'
 import { Route as ApiUploadRouteImport } from './routes/api.upload'
@@ -110,6 +111,11 @@ const ArtistsIndexRoute = ArtistsIndexRouteImport.update({
   path: '/artists/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UploadsFilenameRoute = UploadsFilenameRouteImport.update({
+  id: '/uploads/$filename',
+  path: '/uploads/$filename',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
   path: '/blog/$slug',
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/api/upload': typeof ApiUploadRoute
   '/artists/$artist': typeof ArtistsArtistRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/uploads/$filename': typeof UploadsFilenameRoute
   '/artists/': typeof ArtistsIndexRoute
   '/blog/': typeof BlogIndexRoute
 }
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/api/upload': typeof ApiUploadRoute
   '/artists/$artist': typeof ArtistsArtistRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/uploads/$filename': typeof UploadsFilenameRoute
   '/artists': typeof ArtistsIndexRoute
   '/blog': typeof BlogIndexRoute
 }
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/api/upload': typeof ApiUploadRoute
   '/artists/$artist': typeof ArtistsArtistRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/uploads/$filename': typeof UploadsFilenameRoute
   '/artists/': typeof ArtistsIndexRoute
   '/blog/': typeof BlogIndexRoute
 }
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/artists/$artist'
     | '/blog/$slug'
+    | '/uploads/$filename'
     | '/artists/'
     | '/blog/'
   fileRoutesByTo: FileRoutesByTo
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/artists/$artist'
     | '/blog/$slug'
+    | '/uploads/$filename'
     | '/artists'
     | '/blog'
   id:
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/artists/$artist'
     | '/blog/$slug'
+    | '/uploads/$filename'
     | '/artists/'
     | '/blog/'
   fileRoutesById: FileRoutesById
@@ -286,6 +298,7 @@ export interface RootRouteChildren {
   ApiUploadRoute: typeof ApiUploadRoute
   ArtistsArtistRoute: typeof ArtistsArtistRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  UploadsFilenameRoute: typeof UploadsFilenameRoute
   ArtistsIndexRoute: typeof ArtistsIndexRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
@@ -404,6 +417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtistsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/uploads/$filename': {
+      id: '/uploads/$filename'
+      path: '/uploads/$filename'
+      fullPath: '/uploads/$filename'
+      preLoaderRoute: typeof UploadsFilenameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/blog/$slug'
@@ -454,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadRoute: ApiUploadRoute,
   ArtistsArtistRoute: ArtistsArtistRoute,
   BlogSlugRoute: BlogSlugRoute,
+  UploadsFilenameRoute: UploadsFilenameRoute,
   ArtistsIndexRoute: ArtistsIndexRoute,
   BlogIndexRoute: BlogIndexRoute,
 }

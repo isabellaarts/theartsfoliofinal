@@ -70,6 +70,15 @@ export const Route = createFileRoute("/api/submit")({
               const buffer = Buffer.from(await fileObj.arrayBuffer());
               await fs.writeFile(path.join(uploadsDir, uniqueFilename), buffer);
               
+              // Also save to .output/public/uploads if it exists (for compiled/production environments)
+              const outputDir = path.join(process.cwd(), ".output", "public", "uploads");
+              if (existsSync(path.join(process.cwd(), ".output", "public"))) {
+                if (!existsSync(outputDir)) {
+                  mkdirSync(outputDir, { recursive: true });
+                }
+                await fs.writeFile(path.join(outputDir, uniqueFilename), buffer);
+              }
+              
               savedFiles.push({
                 name: fileObj.name,
                 url: `/uploads/${uniqueFilename}`,
