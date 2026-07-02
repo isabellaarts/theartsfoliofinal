@@ -5,6 +5,13 @@ import path from "node:path";
 import type { Submission } from "../lib/site-data";
 import { readDb, writeDb } from "../lib/db";
 
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://ogfffocysvkvgqvtsqsp.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nZmZmb2N5c3ZrdmdxdnRzcXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NzQyMzksImV4cCI6MjA5ODU1MDIzOX0.Nb-3lOfQvaEr5YVVrqq1cV5LIduqVCnWn77BgQTpICI";
+
+function isSupabaseActive(): boolean {
+  return !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+}
+
 const BREVO_API_KEY = "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";
 
 export const Route = createFileRoute("/api/submit")({
@@ -88,9 +95,38 @@ export const Route = createFileRoute("/api/submit")({
                 await fs.writeFile(path.join(persistentUploadsDir, uniqueFilename), buffer);
               }
               
+              let fileUrl = `/uploads/${uniqueFilename}`;
+
+              // If Supabase is active, upload to Supabase Storage
+              if (isSupabaseActive()) {
+                try {
+                  console.log("Uploading attachment to Supabase Storage:", uniqueFilename);
+                  const supabaseUploadUrl = `${SUPABASE_URL}/storage/v1/object/uploads/${uniqueFilename}`;
+                  const uploadRes = await fetch(supabaseUploadUrl, {
+                    method: "POST",
+                    headers: {
+                      apikey: SUPABASE_ANON_KEY,
+                      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                      "Content-Type": fileObj.type || "application/octet-stream"
+                    },
+                    body: buffer
+                  });
+
+                  if (!uploadRes.ok) {
+                    const text = await uploadRes.text();
+                    throw new Error(`Supabase Storage upload failed (${uploadRes.status}): ${text}`);
+                  }
+
+                  fileUrl = `${SUPABASE_URL}/storage/v1/object/public/uploads/${uniqueFilename}`;
+                  console.log("Attachment uploaded to Supabase Storage. URL:", fileUrl);
+                } catch (err: any) {
+                  console.error("Supabase Storage attachment upload error:", err.message);
+                }
+              }
+
               savedFiles.push({
                 name: fileObj.name,
-                url: `/uploads/${uniqueFilename}`,
+                url: fileUrl,
                 buffer,
                 mimeType: fileObj.type || "application/octet-stream"
               });

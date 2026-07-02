@@ -3,6 +3,13 @@ import fs from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://ogfffocysvkvgqvtsqsp.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nZmZmb2N5c3ZrdmdxdnRzcXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NzQyMzksImV4cCI6MjA5ODU1MDIzOX0.Nb-3lOfQvaEr5YVVrqq1cV5LIduqVCnWn77BgQTpICI";
+
+function isSupabaseActive(): boolean {
+  return !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+}
+
 export const Route = createFileRoute("/uploads/$filename")({
   server: {
     handlers: {
@@ -32,6 +39,40 @@ export const Route = createFileRoute("/uploads/$filename")({
           }
 
           if (!filePath) {
+            // Check Supabase Storage if active
+            if (isSupabaseActive()) {
+              try {
+                const supabasePublicUrl = `${SUPABASE_URL}/storage/v1/object/public/uploads/${filename}`;
+                const supabaseRes = await fetch(supabasePublicUrl);
+                if (supabaseRes.ok) {
+                  const fileBuffer = await supabaseRes.arrayBuffer();
+                  const ext = path.extname(filename).toLowerCase();
+                  let contentType = "application/octet-stream";
+                  
+                  if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
+                  else if (ext === ".png") contentType = "image/png";
+                  else if (ext === ".gif") contentType = "image/gif";
+                  else if (ext === ".webp") contentType = "image/webp";
+                  else if (ext === ".svg") contentType = "image/svg+xml";
+                  else if (ext === ".mp4") contentType = "video/mp4";
+                  else if (ext === ".webm") contentType = "video/webm";
+                  else if (ext === ".mov") contentType = "video/quicktime";
+                  else if (ext === ".pdf") contentType = "application/pdf";
+                  else if (ext === ".zip") contentType = "application/zip";
+
+                  return new Response(fileBuffer, {
+                    status: 200,
+                    headers: {
+                      "Content-Type": contentType,
+                      "Cache-Control": "public, max-age=31536000",
+                    },
+                  });
+                }
+              } catch (supabaseErr) {
+                console.error("Failed to fetch from Supabase fallback:", supabaseErr);
+              }
+            }
+
             return new Response("File not found", { status: 404 });
           }
 

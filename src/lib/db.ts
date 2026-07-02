@@ -36,6 +36,56 @@ async function getNodeModules() {
   return { fs: fs.default || fs, existsSync, mkdirSync, path: path.default || path };
 }
 
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://ogfffocysvkvgqvtsqsp.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nZmZmb2N5c3ZrdmdxdnRzcXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NzQyMzksImV4cCI6MjA5ODU1MDIzOX0.Nb-3lOfQvaEr5YVVrqq1cV5LIduqVCnWn77BgQTpICI";
+
+export function isSupabaseActive(): boolean {
+  return !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+}
+
+async function fetchSupabase(method: "GET" | "POST" | "PATCH", body?: any): Promise<any> {
+  const url = SUPABASE_URL;
+  const key = SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error("Supabase credentials missing");
+  }
+
+  let requestUrl = `${url}/rest/v1/app_store`;
+  if (method === "GET") {
+    requestUrl += "?select=data&id=eq.1";
+  } else if (method === "PATCH") {
+    requestUrl += "?id=eq.1";
+  }
+
+  const headers: Record<string, string> = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    "Content-Type": "application/json",
+  };
+
+  const response = await fetch(requestUrl, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Supabase API error (${response.status}): ${text}`);
+  }
+
+  const text = await response.text();
+  if (!text) return null;
+  
+  if (method === "GET") {
+    const list = JSON.parse(text);
+    return list[0]?.data || null;
+  }
+
+  return JSON.parse(text);
+}
+
 function getDbPath() {
   if (typeof process === "undefined" || !process.cwd) return "";
   if (process.env.PERSISTENT_DIR) {
@@ -76,6 +126,62 @@ export function initDb(): Promise<void> {
       const uploadsDir = process.cwd() + "/public/uploads";
       if (!existsSync(uploadsDir)) {
         mkdirSync(uploadsDir, { recursive: true });
+      }
+    }
+
+    // Initialize Supabase if active
+    if (isSupabaseActive()) {
+      try {
+        console.log("Checking if Supabase database is initialized...");
+        const data = await fetchSupabase("GET");
+        if (!data || Object.keys(data).length === 0) {
+          console.log("Supabase db empty. Seeding from local database template...");
+          let seedData: any = null;
+          const seedPath = path.join(process.cwd(), "src", "data", "db.json");
+          if (existsSync(seedPath)) {
+            const seedText = await fs.readFile(seedPath, "utf-8");
+            seedData = JSON.parse(seedText);
+          } else {
+            seedData = {
+              submissions: [],
+              team: TEAM,
+              portfolio: PORTFOLIO,
+              reviews: REVIEWS,
+              users: [
+                {
+                  id: "usr_admin",
+                  username: "admin",
+                  passwordHash: hashPassword("admin"),
+                  role: "admin",
+                  name: "Administrator"
+                },
+                ...TEAM.map(artist => ({
+                  id: `usr_${artist.slug}`,
+                  username: artist.slug,
+                  passwordHash: hashPassword("password"),
+                  role: "artist" as const,
+                  artistSlug: artist.slug,
+                  name: artist.name
+                }))
+              ],
+              interactiveGallery: DEFAULT_INTERACTIVE_GALLERY,
+              siteConfig: DEFAULT_SITE_CONFIG
+            };
+          }
+          
+          try {
+            await fetchSupabase("POST", { id: 1, data: seedData });
+            console.log("Supabase database successfully seeded (POST)!");
+          } catch (postErr) {
+            await fetchSupabase("PATCH", { data: seedData });
+            console.log("Supabase database successfully seeded (PATCH)!");
+          }
+        } else {
+          console.log("Supabase database is ready and initialized!");
+        }
+      } catch (err: any) {
+        console.error("Error initializing Supabase database:", err.message);
+        console.log("Falling back to local filesystem database initialization.");
       }
     }
 
@@ -305,9 +411,19 @@ export function initDb(): Promise<void> {
 let dbQueuePromise: Promise<any> = Promise.resolve();
 
 export async function readDb(): Promise<DbSchema> {
+  await initDb();
+
+  if (isSupabaseActive()) {
+    try {
+      const data = await fetchSupabase("GET");
+      if (data) return data as DbSchema;
+    } catch (err: any) {
+      console.error("Supabase readDb error:", err.message);
+    }
+  }
+
   const { fs } = await getNodeModules();
   const dbPath = getDbPath();
-  await initDb();
   
   const data = await new Promise<string>((resolve, reject) => {
     dbQueuePromise = dbQueuePromise.then(async () => {
@@ -324,9 +440,19 @@ export async function readDb(): Promise<DbSchema> {
 }
 
 export async function writeDb(data: DbSchema): Promise<void> {
+  await initDb();
+
+  if (isSupabaseActive()) {
+    try {
+      await fetchSupabase("PATCH", { data });
+      return;
+    } catch (err: any) {
+      console.error("Supabase writeDb error:", err.message);
+    }
+  }
+
   const { fs } = await getNodeModules();
   const dbPath = getDbPath();
-  await initDb();
   
   dbQueuePromise = dbQueuePromise.then(async () => {
     await fs.writeFile(dbPath, JSON.stringify(data, null, 2), "utf-8");
