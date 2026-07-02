@@ -170,10 +170,10 @@ export function initDb(): Promise<void> {
           }
           
           try {
-            await fetchSupabase("POST", { id: 1, data: seedData });
+            await fetchSupabase("POST", { id: 1, data: seedData, updated_at: new Date().toISOString() });
             console.log("Supabase database successfully seeded (POST)!");
           } catch (postErr) {
-            await fetchSupabase("PATCH", { data: seedData });
+            await fetchSupabase("PATCH", { data: seedData, updated_at: new Date().toISOString() });
             console.log("Supabase database successfully seeded (PATCH)!");
           }
         } else {
@@ -444,7 +444,7 @@ export async function writeDb(data: DbSchema): Promise<void> {
 
   if (isSupabaseActive()) {
     try {
-      await fetchSupabase("PATCH", { data });
+      await fetchSupabase("PATCH", { data, updated_at: new Date().toISOString() });
       return;
     } catch (err: any) {
       console.error("Supabase writeDb error:", err.message);
