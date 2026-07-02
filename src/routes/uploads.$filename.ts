@@ -19,6 +19,10 @@ export const Route = createFileRoute("/uploads/$filename")({
             path.join(process.cwd(), ".output", "public", "uploads", filename),
           ];
 
+          if (process.env.PERSISTENT_DIR) {
+            possiblePaths.unshift(path.join(process.env.PERSISTENT_DIR, "uploads", filename));
+          }
+
           let filePath = "";
           for (const p of possiblePaths) {
             if (existsSync(p)) {
@@ -33,10 +37,17 @@ export const Route = createFileRoute("/uploads/$filename")({
 
           // Security Check: Prevent Directory Traversal
           const resolvedPath = path.resolve(filePath);
-          const allowedDir1 = path.resolve(path.join(process.cwd(), "public", "uploads"));
-          const allowedDir2 = path.resolve(path.join(process.cwd(), ".output", "public", "uploads"));
+          const allowedDirs = [
+            path.resolve(path.join(process.cwd(), "public", "uploads")),
+            path.resolve(path.join(process.cwd(), ".output", "public", "uploads")),
+          ];
           
-          if (!resolvedPath.startsWith(allowedDir1) && !resolvedPath.startsWith(allowedDir2)) {
+          if (process.env.PERSISTENT_DIR) {
+            allowedDirs.push(path.resolve(path.join(process.env.PERSISTENT_DIR, "uploads")));
+          }
+
+          const isAllowed = allowedDirs.some((dir) => resolvedPath.startsWith(dir));
+          if (!isAllowed) {
             return new Response("Access Denied", { status: 403 });
           }
 

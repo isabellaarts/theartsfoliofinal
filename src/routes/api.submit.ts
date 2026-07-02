@@ -79,6 +79,15 @@ export const Route = createFileRoute("/api/submit")({
                 await fs.writeFile(path.join(outputDir, uniqueFilename), buffer);
               }
               
+              // Also save to persistent directory if environment variable is set
+              if (process.env.PERSISTENT_DIR) {
+                const persistentUploadsDir = path.join(process.env.PERSISTENT_DIR, "uploads");
+                if (!existsSync(persistentUploadsDir)) {
+                  mkdirSync(persistentUploadsDir, { recursive: true });
+                }
+                await fs.writeFile(path.join(persistentUploadsDir, uniqueFilename), buffer);
+              }
+              
               savedFiles.push({
                 name: fileObj.name,
                 url: `/uploads/${uniqueFilename}`,

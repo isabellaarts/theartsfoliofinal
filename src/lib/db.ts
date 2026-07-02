@@ -38,6 +38,10 @@ async function getNodeModules() {
 
 function getDbPath() {
   if (typeof process === "undefined" || !process.cwd) return "";
+  if (process.env.PERSISTENT_DIR) {
+    const dir = process.env.PERSISTENT_DIR;
+    return dir.endsWith("/") || dir.endsWith("\\") ? `${dir}db.json` : `${dir}/db.json`;
+  }
   return process.cwd() + "/src/data/db.json";
 }
 
@@ -47,13 +51,24 @@ export function initDb(): Promise<void> {
   if (dbInitPromise) return dbInitPromise;
 
   dbInitPromise = (async () => {
-    const { fs, existsSync, mkdirSync } = await getNodeModules();
+    const { fs, existsSync, mkdirSync, path } = await getNodeModules();
     const dbPath = getDbPath();
     if (!dbPath) return;
 
-    const dataDir = dbPath.substring(0, dbPath.lastIndexOf("/"));
-    if (!existsSync(dataDir)) {
-      mkdirSync(dataDir, { recursive: true });
+    if (process.env.PERSISTENT_DIR) {
+      const persistentDir = process.env.PERSISTENT_DIR;
+      if (!existsSync(persistentDir)) {
+        mkdirSync(persistentDir, { recursive: true });
+      }
+      const persistentUploadsDir = path.join(persistentDir, "uploads");
+      if (!existsSync(persistentUploadsDir)) {
+        mkdirSync(persistentUploadsDir, { recursive: true });
+      }
+    } else {
+      const dataDir = dbPath.substring(0, dbPath.lastIndexOf("/"));
+      if (!existsSync(dataDir)) {
+        mkdirSync(dataDir, { recursive: true });
+      }
     }
 
     // Create uploads dir
@@ -65,32 +80,44 @@ export function initDb(): Promise<void> {
     }
 
     if (!existsSync(dbPath)) {
-      const initialDb: DbSchema = {
-        submissions: [],
-        team: TEAM,
-        portfolio: PORTFOLIO,
-        reviews: REVIEWS,
-        users: [
-          {
-            id: "usr_admin",
-            username: "admin",
-            passwordHash: hashPassword("admin"),
-            role: "admin",
-            name: "Administrator"
-          },
-          ...TEAM.map(artist => ({
-            id: `usr_${artist.slug}`,
-            username: artist.slug,
-            passwordHash: hashPassword("password"),
-            role: "artist" as const,
-            artistSlug: artist.slug,
-            name: artist.name
-          }))
-        ],
-        interactiveGallery: DEFAULT_INTERACTIVE_GALLERY,
-        siteConfig: DEFAULT_SITE_CONFIG
-      };
-      await fs.writeFile(dbPath, JSON.stringify(initialDb, null, 2), "utf-8");
+      // Seed from default db.json if it exists in the repo
+      const seedPath = path.join(process.cwd(), "src", "data", "db.json");
+      if (existsSync(seedPath)) {
+        try {
+          const seedData = await fs.readFile(seedPath, "utf-8");
+          await fs.writeFile(dbPath, seedData, "utf-8");
+          console.log("Database initialized and seeded from default db.json");
+        } catch (err) {
+          console.error("Failed to seed database from template db.json:", err);
+        }
+      } else {
+        const initialDb: DbSchema = {
+          submissions: [],
+          team: TEAM,
+          portfolio: PORTFOLIO,
+          reviews: REVIEWS,
+          users: [
+            {
+              id: "usr_admin",
+              username: "admin",
+              passwordHash: hashPassword("admin"),
+              role: "admin",
+              name: "Administrator"
+            },
+            ...TEAM.map(artist => ({
+              id: `usr_${artist.slug}`,
+              username: artist.slug,
+              passwordHash: hashPassword("password"),
+              role: "artist" as const,
+              artistSlug: artist.slug,
+              name: artist.name
+            }))
+          ],
+          interactiveGallery: DEFAULT_INTERACTIVE_GALLERY,
+          siteConfig: DEFAULT_SITE_CONFIG
+        };
+        await fs.writeFile(dbPath, JSON.stringify(initialDb, null, 2), "utf-8");
+      }
     } else {
       // Schema migration for existing databases
       try {
