@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SectionHeading, GlassCard } from "@/components/site/ui-bits";
 import { Search, ArrowRight } from "lucide-react";
-import { IMAGES } from "@/lib/site-data";
+import { useSiteData } from "@/hooks/use-site-data";
 
 export const Route = createFileRoute("/blog/")({
   head: () => ({
@@ -31,68 +31,17 @@ const CATEGORIES = [
   "Marketing",
 ];
 
-const POSTS = [
-  {
-    slug: "designing-a-cover-that-sells",
-    title: "Designing a Cover That Sells (Without Looking Like Everyone Else)",
-    category: "Cover Design",
-    excerpt:
-      "Genre conventions exist for a reason — and so does breaking them. Here's the line we walk on every commission.",
-    image: IMAGES.cover1,
-    date: "May 14, 2026",
-  },
-  {
-    slug: "fantasy-maps-101",
-    title: "Fantasy Maps 101: From Continent Sketch to Final Cartography",
-    category: "Fantasy World Building",
-    excerpt:
-      "How we build a believable world map, layer by layer — and what we wish more authors knew before commissioning one.",
-    image: IMAGES.map2,
-    date: "April 30, 2026",
-  },
-  {
-    slug: "ai-vs-human-art",
-    title: "Why Authors Are Moving Away From AI Art",
-    category: "Publishing Tips",
-    excerpt:
-      "Inconsistency, copyright, character drift — the costs of cutting corners. A grounded look at where AI fits, and where it doesn't.",
-    image: IMAGES.char2,
-    date: "April 12, 2026",
-  },
-  {
-    slug: "character-portraits-that-pop",
-    title: "Character Portraits That Actually Sell Your Series",
-    category: "Character Art",
-    excerpt:
-      "Composition, lighting and signature silhouette — what makes a portrait do work for your book and your marketing.",
-    image: IMAGES.char1,
-    date: "March 28, 2026",
-  },
-  {
-    slug: "book-launch-creative-checklist",
-    title: "The Book Launch Creative Checklist",
-    category: "Marketing",
-    excerpt:
-      "Every asset you'll wish you ordered before launch day, in the order we recommend producing them.",
-    image: IMAGES.social1,
-    date: "March 10, 2026",
-  },
-  {
-    slug: "brand-systems-for-indie-authors",
-    title: "Brand Systems for Indie Authors",
-    category: "Marketing",
-    excerpt:
-      "Why a coherent author brand is the highest-leverage thing you can build between books.",
-    image: IMAGES.brand1,
-    date: "February 24, 2026",
-  },
-];
-
 function BlogPage() {
+  const { blogs } = useSiteData();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("All");
-  const filtered = POSTS.filter(
-    (p) => (cat === "All" || p.category === cat) && p.title.toLowerCase().includes(q.toLowerCase()),
+
+  const published = (blogs || []).filter((p) => p.status === "published");
+  
+  const filtered = published.filter(
+    (p) => 
+      (cat === "All" || p.category === cat) && 
+      (p.title.toLowerCase().includes(q.toLowerCase()) || p.excerpt.toLowerCase().includes(q.toLowerCase()))
   );
 
   return (
@@ -144,12 +93,12 @@ function BlogPage() {
       <section className="pb-32">
         <div className="mx-auto max-w-7xl px-5 lg:px-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
-            <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }}>
-              <GlassCard className="p-0 overflow-hidden h-full flex flex-col">
+            <Link key={p.id} to="/blog/$slug" params={{ slug: p.slug }}>
+              <GlassCard className="p-0 overflow-hidden h-full flex flex-col hover-lift">
                 <div className="aspect-[16/10] overflow-hidden">
                   <img
                     src={p.image}
-                    alt={p.title}
+                    alt={p.imageAlt || p.title}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                   />
@@ -161,7 +110,7 @@ function BlogPage() {
                     </span>
                     <span className="text-xs text-muted-foreground">{p.date}</span>
                   </div>
-                  <h3 className="font-display text-xl font-bold leading-tight">{p.title}</h3>
+                  <h3 className="font-display text-xl font-bold leading-tight text-white">{p.title}</h3>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed flex-1">
                     {p.excerpt}
                   </p>

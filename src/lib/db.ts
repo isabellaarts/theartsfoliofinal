@@ -1,5 +1,5 @@
 import { pbkdf2Sync, randomBytes } from "node:crypto";
-import { TEAM, PORTFOLIO, REVIEWS, type Artist, type PortfolioItem, type Submission, type GlobalReview, type UserAccount, type InteractiveGalleryItem, type SiteConfig, DEFAULT_SITE_CONFIG, DEFAULT_INTERACTIVE_GALLERY, DEFAULT_CONTACT_PAGE_CONFIG } from "./site-data";
+import { TEAM, PORTFOLIO, REVIEWS, type Artist, type PortfolioItem, type Submission, type GlobalReview, type UserAccount, type InteractiveGalleryItem, type SiteConfig, DEFAULT_SITE_CONFIG, DEFAULT_INTERACTIVE_GALLERY, DEFAULT_CONTACT_PAGE_CONFIG, DEFAULT_POSTS, type BlogPost } from "./site-data";
 
 export type { Submission, GlobalReview };
 
@@ -11,6 +11,7 @@ export interface DbSchema {
   users?: UserAccount[];
   interactiveGallery?: InteractiveGalleryItem[];
   siteConfig?: SiteConfig;
+  blogs?: BlogPost[];
 }
 
 export function hashPassword(password: string): string {
@@ -165,7 +166,8 @@ export function initDb(): Promise<void> {
                 }))
               ],
               interactiveGallery: DEFAULT_INTERACTIVE_GALLERY,
-              siteConfig: DEFAULT_SITE_CONFIG
+              siteConfig: DEFAULT_SITE_CONFIG,
+              blogs: DEFAULT_POSTS
             };
           }
           
@@ -395,6 +397,12 @@ export function initDb(): Promise<void> {
           }
         }
 
+        // Migrate blogs
+        if (!db.blogs) {
+          db.blogs = DEFAULT_POSTS;
+          migrated = true;
+        }
+
         if (migrated) {
           await fs.writeFile(dbPath, JSON.stringify(db, null, 2), "utf-8");
           console.log("Database successfully migrated to CMS-driven schema!");
@@ -416,7 +424,18 @@ export async function readDb(): Promise<DbSchema> {
   if (isSupabaseActive()) {
     try {
       const data = await fetchSupabase("GET");
-      if (data) return data as DbSchema;
+      if (data) {
+        let needsWrite = false;
+        if (!data.blogs) {
+          data.blogs = DEFAULT_POSTS;
+          needsWrite = true;
+        }
+        if (needsWrite) {
+          console.log("Migrating Supabase database to include blogs...");
+          await fetchSupabase("PATCH", { data, updated_at: new Date().toISOString() });
+        }
+        return data as DbSchema;
+      }
     } catch (err: any) {
       console.error("Supabase readDb error:", err.message);
     }

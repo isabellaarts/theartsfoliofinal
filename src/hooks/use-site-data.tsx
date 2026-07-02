@@ -16,9 +16,11 @@ import {
   deleteUser as serverDeleteUser,
   saveSiteConfig as serverSaveSiteConfig,
   saveGalleryItem as serverSaveGalleryItem,
-  deleteGalleryItem as serverDeleteGalleryItem
+  deleteGalleryItem as serverDeleteGalleryItem,
+  saveBlogPost as serverSaveBlogPost,
+  deleteBlogPost as serverDeleteBlogPost
 } from "../lib/server-functions";
-import type { Artist, PortfolioItem, GlobalReview, Submission, UserAccount, InteractiveGalleryItem, SiteConfig } from "../lib/site-data";
+import type { Artist, PortfolioItem, GlobalReview, Submission, UserAccount, InteractiveGalleryItem, SiteConfig, BlogPost } from "../lib/site-data";
 
 interface AuthUser {
   username: string;
@@ -64,6 +66,10 @@ interface SiteDataContextType {
   saveSiteConfig: (config: SiteConfig) => Promise<boolean>;
   saveGalleryItem: (item: InteractiveGalleryItem) => Promise<boolean>;
   deleteGalleryItem: (id: string) => Promise<boolean>;
+  blogs: BlogPost[];
+  addBlogPost: (post: BlogPost) => Promise<boolean>;
+  updateBlogPost: (id: string, post: BlogPost) => Promise<boolean>;
+  deleteBlogPost: (id: string) => Promise<boolean>;
 }
 
 const SiteDataContext = React.createContext<SiteDataContextType | undefined>(undefined);
@@ -80,6 +86,7 @@ export function SiteDataProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = React.useState<UserAccount[]>([]);
   const [interactiveGallery, setInteractiveGallery] = React.useState<InteractiveGalleryItem[]>([]);
   const [siteConfig, setSiteConfig] = React.useState<SiteConfig | null>(null);
+  const [blogs, setBlogs] = React.useState<BlogPost[]>([]);
 
   // Sync auth state with localStorage client-side
   React.useEffect(() => {
@@ -103,6 +110,7 @@ export function SiteDataProvider({ children }: { children: React.ReactNode }) {
         setUsers(data.users || []);
         setInteractiveGallery(data.interactiveGallery || []);
         setSiteConfig(data.siteConfig || null);
+        setBlogs(data.blogs || []);
       }
       
       // If user is admin, also fetch submissions
@@ -331,6 +339,39 @@ export function SiteDataProvider({ children }: { children: React.ReactNode }) {
     return false;
   };
 
+  const addBlogPost = async (post: BlogPost): Promise<boolean> => {
+    const res = await serverSaveBlogPost({ data: post });
+    if (res.success) {
+      toast.success("Blog post created successfully");
+      await refreshData();
+      return true;
+    }
+    toast.error(res.message || "Failed to create blog post");
+    return false;
+  };
+
+  const updateBlogPost = async (id: string, post: BlogPost): Promise<boolean> => {
+    const res = await serverSaveBlogPost({ data: { ...post, id } });
+    if (res.success) {
+      toast.success("Blog post updated successfully");
+      await refreshData();
+      return true;
+    }
+    toast.error(res.message || "Failed to update blog post");
+    return false;
+  };
+
+  const deleteBlogPost = async (id: string): Promise<boolean> => {
+    const res = await serverDeleteBlogPost({ data: id });
+    if (res.success) {
+      toast.success("Blog post deleted successfully");
+      await refreshData();
+      return true;
+    }
+    toast.error(res.message || "Failed to delete blog post");
+    return false;
+  };
+
   return (
     <SiteDataContext.Provider
       value={{
@@ -361,7 +402,11 @@ export function SiteDataProvider({ children }: { children: React.ReactNode }) {
         deleteUser,
         saveSiteConfig,
         saveGalleryItem,
-        deleteGalleryItem
+        deleteGalleryItem,
+        blogs,
+        addBlogPost,
+        updateBlogPost,
+        deleteBlogPost
       }}
     >
       {children}

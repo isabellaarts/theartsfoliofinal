@@ -21,7 +21,9 @@ import {
   Sparkles,
   Globe,
   Lock,
+  Play,
 } from "lucide-react";
+import { VideoWatermark } from "@/components/site/VideoWatermark";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -153,8 +155,25 @@ function ArtistPage() {
   const ctaButton1Label = artist.ctaButton1Label || "Hire This Artist";
   const ctaButton2Label = artist.ctaButton2Label || "Book a Free Consultation";
 
-  // State to manage the active portfolio item for the details modal
-  const [activeItem, setActiveItem] = useState<any | null>(null);
+  // State to manage the active portfolio item 
+  const [activeItem, setActiveItem] = useState<any>(null);
+  const [isProcessVideoOpen, setIsProcessVideoOpen] = useState(false);
+
+  useEffect(() => {
+    if (activeItem) {
+      document.title = activeItem.metaTitle || `${activeItem.title} — ${artist.name} — The Arts Folio`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", activeItem.metaDescription || activeItem.description);
+      }
+    } else {
+      document.title = artist ? `${artist.name} — ${artist.role} — The Arts Folio` : "Artist — The Arts Folio";
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", artist ? `${artist.name}, ${artist.role} at The Arts Folio. ${artist.bio.slice(0, 140)}` : "Artist profile");
+      }
+    }
+  }, [activeItem, artist]);
 
   // Fetch and filter portfolio items associated with this artist
   const { portfolio: allPortfolio } = useSiteData();
@@ -405,16 +424,38 @@ function ArtistPage() {
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
               {processVideoDescription}
             </p>
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 aspect-[4/3] bg-black/40">
+            <div 
+              onClick={() => setIsProcessVideoOpen(true)}
+              className="relative overflow-hidden rounded-3xl border border-white/10 aspect-[4/3] bg-black/40 group cursor-pointer"
+            >
               <video
                 src={videoUrl}
                 autoPlay
                 loop
                 muted
                 playsInline
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
+              <div className="absolute inset-0 bg-black/25 flex items-center justify-center transition-all duration-300 group-hover:bg-black/35">
+                <div className="h-16 w-16 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
+                  <Play className="h-7 w-7 text-white fill-white ml-1" />
+                </div>
+              </div>
             </div>
+
+            <Dialog open={isProcessVideoOpen} onOpenChange={setIsProcessVideoOpen}>
+              <DialogContent className="max-w-5xl glass-strong border-white/10 p-0 overflow-hidden">
+                <div className="relative w-full h-full flex items-center justify-center bg-black/45 min-h-[300px] md:min-h-[480px]">
+                  <video
+                    src={videoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain max-h-[80vh]"
+                  />
+                  <VideoWatermark />
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </section>
@@ -457,18 +498,23 @@ function ArtistPage() {
                   className="group relative block w-full aspect-square overflow-hidden rounded-3xl glass hover-lift cursor-pointer text-left"
                 >
                   {p.mediaType === "video" ? (
-                    <video
-                      src={p.videoUrl}
-                      muted
-                      loop
-                      playsInline
-                      autoPlay
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
+                    <div className="relative w-full h-full overflow-hidden">
+                      <img
+                        src={p.image}
+                        alt={p.imageAlt || p.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                        <div className="h-12 w-12 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
+                          <Play className="h-5 w-5 text-white fill-white ml-0.5" />
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <img
                       src={p.image}
-                      alt={p.title}
+                      alt={p.imageAlt || p.title}
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -494,16 +540,19 @@ function ArtistPage() {
             <div className="grid md:grid-cols-2">
               <div className="relative bg-black/20 flex items-center justify-center">
                 {activeItem.mediaType === "video" ? (
-                  <video
-                    src={activeItem.videoUrl}
-                    controls
-                    autoPlay
-                    className="w-full h-full object-cover max-h-[80vh]"
-                  />
+                  <div className="relative w-full h-full flex items-center justify-center bg-black/40 min-h-[300px] md:min-h-[450px]">
+                    <video
+                      src={activeItem.videoUrl}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-contain max-h-[80vh]"
+                    />
+                    <VideoWatermark />
+                  </div>
                 ) : (
                   <img
                     src={activeItem.image}
-                    alt={activeItem.title}
+                    alt={activeItem.imageAlt || activeItem.title}
                     className="w-full h-full object-cover max-h-[80vh]"
                   />
                 )}

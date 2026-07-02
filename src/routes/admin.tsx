@@ -110,7 +110,7 @@ function AdminRouteComponent() {
   return <DashboardWorkspace />;
 }
 
-type TabType = "submissions" | "artists" | "portfolio" | "reviews" | "gallery" | "homepage" | "users" | "my-account";
+type TabType = "submissions" | "artists" | "portfolio" | "reviews" | "gallery" | "homepage" | "users" | "my-account" | "blogs";
 
 function DashboardWorkspace() {
   const { user, logout } = useSiteData();
@@ -188,6 +188,12 @@ function DashboardWorkspace() {
                 icon={Settings}
                 label="User Accounts"
               />
+              <TabButton
+                active={activeTab === "blogs"}
+                onClick={() => setActiveTab("blogs")}
+                icon={Edit2}
+                label="Blog Management"
+              />
             </>
           )}
           
@@ -209,6 +215,7 @@ function DashboardWorkspace() {
           {activeTab === "homepage" && user?.role === "admin" && <HomepagePanel />}
           {activeTab === "users" && user?.role === "admin" && <UsersPanel />}
           {activeTab === "my-account" && <MyAccountPanel />}
+          {activeTab === "blogs" && user?.role === "admin" && <BlogsPanel />}
         </div>
       </div>
     </div>
@@ -1344,6 +1351,10 @@ function PortfolioPanel() {
       artistSlug: user?.role === "admin" ? (formData.artistSlug || "emily") : (user?.artistSlug || "emily"),
       status: formData.status || "published",
       order: formData.order !== undefined ? formData.order : portfolio.length,
+      metaTitle: formData.metaTitle || "",
+      metaDescription: formData.metaDescription || "",
+      imageAlt: formData.imageAlt || "",
+      seoSlug: formData.seoSlug || (formData.title ? formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") : `port-${Date.now()}`),
     };
 
     if (isCreating) {
@@ -1606,6 +1617,54 @@ function PortfolioPanel() {
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm focus:outline-none text-white"
               />
+            </div>
+
+            <div className="border-t border-white/5 pt-5 mt-4 space-y-4">
+              <h4 className="font-display text-sm font-semibold text-brand-pink">Search Engine Optimization (SEO)</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">SEO Meta Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Veil of Embers Cover Design"
+                    value={formData.metaTitle || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, metaTitle: e.target.value }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">SEO-friendly Slug</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. veil-of-embers-cover"
+                    value={formData.seoSlug || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, seoSlug: e.target.value }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                  />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Image Alt Text (Accessibility)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Intricate illustrated book cover with magical symbols"
+                    value={formData.imageAlt || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, imageAlt: e.target.value }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">SEO Meta Description</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Explore the custom cover design details for..."
+                    value={formData.metaDescription || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-4 border-t border-white/5">
@@ -3446,6 +3505,417 @@ function MyAccountPanel() {
           </div>
         </form>
       </GlassCard>
+    </div>
+  );
+}
+
+// 9. BLOGS PANEL (Blog Management System)
+import { type BlogPost } from "@/lib/site-data";
+
+function BlogsPanel() {
+  const { blogs, addBlogPost, updateBlogPost, deleteBlogPost } = useSiteData();
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState<Partial<BlogPost>>({});
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const startCreate = () => {
+    setIsCreating(true);
+    setEditingPost(null);
+    setFormData({
+      id: `blog_${Date.now()}`,
+      title: "",
+      slug: "",
+      category: "Publishing Tips",
+      excerpt: "",
+      content: "",
+      image: "",
+      imageAlt: "",
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      status: "published",
+      metaTitle: "",
+      metaDescription: "",
+    });
+  };
+
+  const startEdit = (post: BlogPost) => {
+    setEditingPost(post);
+    setFormData(post);
+    setIsCreating(false);
+  };
+
+  const uploadFeaturedImage = async (file: File): Promise<string> => {
+    setUploading(true);
+    const toastId = toast.loading("Uploading featured image...");
+    try {
+      const uFormData = new FormData();
+      uFormData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uFormData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to upload image");
+      }
+
+      const data = await res.json();
+      toast.success("Image uploaded successfully!", { id: toastId });
+      return data.url;
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload image", { id: toastId });
+      throw err;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadFeaturedImage(file);
+      setFormData((prev) => ({ ...prev, image: url }));
+    } catch (err) {}
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDropUpload = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      try {
+        const url = await uploadFeaturedImage(file);
+        setFormData((prev) => ({ ...prev, image: url }));
+      } catch (err) {}
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title) {
+      toast.error("Blog title is required.");
+      return;
+    }
+    
+    const finalSlug = formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    
+    const finalPost: BlogPost = {
+      id: formData.id || `blog_${Date.now()}`,
+      title: formData.title,
+      slug: finalSlug,
+      category: formData.category || "Publishing Tips",
+      excerpt: formData.excerpt || "",
+      content: formData.content || "",
+      image: formData.image || "",
+      imageAlt: formData.imageAlt || "",
+      date: formData.date || new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      status: formData.status || "published",
+      metaTitle: formData.metaTitle || `${formData.title} | The Arts Folio`,
+      metaDescription: formData.metaDescription || formData.excerpt || "",
+    };
+
+    let ok = false;
+    if (isCreating) {
+      ok = await addBlogPost(finalPost);
+      if (ok) setIsCreating(false);
+    } else if (editingPost) {
+      ok = await updateBlogPost(editingPost.id, finalPost);
+      if (ok) setEditingPost(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this blog post? This action cannot be undone.")) {
+      await deleteBlogPost(id);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-2xl font-bold">Blog Management Portal</h2>
+        {!isCreating && !editingPost && (
+          <button
+            onClick={startCreate}
+            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-4 py-2.5 text-xs font-semibold text-white cursor-pointer shadow-glow"
+          >
+            <Plus className="h-4 w-4" /> Create Blog Post
+          </button>
+        )}
+      </div>
+
+      {(isCreating || editingPost) && (
+        <GlassCard className="p-6 md:p-8 border-white/10 relative">
+          <h3 className="font-display text-xl font-bold mb-6">
+            {isCreating ? "Create New Blog Post" : `Edit Post: ${formData.title}`}
+          </h3>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Post Title</label>
+                <input
+                  required
+                  type="text"
+                  value={formData.title || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Category</label>
+                <select
+                  value={formData.category || "Publishing Tips"}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+                  className="w-full rounded-xl bg-surface-2 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white cursor-pointer"
+                >
+                  <option value="Publishing Tips">Publishing Tips</option>
+                  <option value="Cover Design">Cover Design</option>
+                  <option value="Character Art">Character Art</option>
+                  <option value="Fantasy World Building">Fantasy World Building</option>
+                  <option value="Marketing">Marketing</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">SEO Slug (URL-friendly)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. designing-a-cover-that-sells (auto-generated if empty)"
+                  value={formData.slug || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Publication Status</label>
+                <select
+                  value={formData.status || "published"}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as any }))}
+                  className="w-full rounded-xl bg-surface-2 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white cursor-pointer"
+                >
+                  <option value="published">Published (Publicly visible)</option>
+                  <option value="draft">Draft (Saved in workspace)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Featured Image Alt Text</label>
+                <input
+                  type="text"
+                  placeholder="e.g. A stack of novels showing covers"
+                  value={formData.imageAlt || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, imageAlt: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Publication Date</label>
+                <input
+                  type="text"
+                  value={formData.date || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Image Drag Zone */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Featured Image</label>
+                <div
+                  onDragEnter={handleDrag}
+                  onDragOver={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDrop={handleDropUpload}
+                  className={cn(
+                    "relative border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-colors min-h-[140px]",
+                    dragActive ? "border-brand-pink bg-brand-pink/5" : "border-white/10 hover:border-white/20 bg-white/5"
+                  )}
+                >
+                  {formData.image ? (
+                    <div className="relative group w-full h-[100px] rounded-lg overflow-hidden border border-white/10">
+                      <img src={formData.image} alt="Featured Preview" className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <p className="text-xs text-white font-semibold">Drop file to replace</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                      <p className="text-xs text-white font-semibold">Drag & drop image or</p>
+                      <label className="mt-2 inline-flex items-center gap-1.5 cursor-pointer rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-[11px] text-white hover:bg-white/10">
+                        Select File
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Excerpt Field */}
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Excerpt (Card Preview Text)</label>
+                <textarea
+                  rows={5}
+                  placeholder="Summarize the article briefly for the index card preview..."
+                  value={formData.excerpt || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35 resize-none h-[140px]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Content Body (HTML Supported)</label>
+              <textarea
+                required
+                rows={10}
+                placeholder="<p>Write your article here...</p><h2 class='font-display text-2xl font-bold mt-10 mb-4'>Subheading</h2><p>Additional paragraphs...</p>"
+                value={formData.content || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm focus:outline-none text-white font-mono placeholder:text-muted-foreground/35"
+              />
+            </div>
+
+            <div className="border-t border-white/5 pt-5 mt-4 space-y-4">
+              <h4 className="font-display text-sm font-semibold text-brand-pink">SEO Meta Details</h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Meta Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Custom Book Cover Design Tips | The Arts Folio"
+                    value={formData.metaTitle || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, metaTitle: e.target.value }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Meta Description</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Learn how we structure custom illustrated cover commissions..."
+                    value={formData.metaDescription || ""}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white placeholder:text-muted-foreground/35"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-4 border-t border-white/5">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingPost(null);
+                  setIsCreating(false);
+                }}
+                className="rounded-full glass border border-white/10 px-5 py-2.5 text-xs font-semibold hover:bg-white/10 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={uploading}
+                className="rounded-full bg-gradient-brand px-6 py-2.5 text-xs font-semibold text-white shadow-glow hover:scale-[1.02] transition-transform cursor-pointer disabled:opacity-50"
+              >
+                Save Blog Post
+              </button>
+            </div>
+          </form>
+        </GlassCard>
+      )}
+
+      {/* Grid Post List */}
+      {!isCreating && !editingPost && (
+        <div className="space-y-4">
+          {blogs.length === 0 ? (
+            <GlassCard className="p-12 text-center">
+              <p className="text-muted-foreground text-sm">No blog posts found. Create your first post using the button above.</p>
+            </GlassCard>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {blogs.map((post) => (
+                <GlassCard key={post.id} className="p-0 overflow-hidden flex flex-col justify-between">
+                  <div>
+                    {post.image ? (
+                      <div className="aspect-[16/9] w-full overflow-hidden border-b border-white/5">
+                        <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="aspect-[16/9] w-full bg-white/5 flex items-center justify-center border-b border-white/5 text-xs text-muted-foreground">
+                        No Featured Image
+                      </div>
+                    )}
+                    <div className="p-5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-semibold tracking-wider text-brand-pink">{post.category}</span>
+                        <span className="text-[10px] rounded-full px-2 py-0.5 bg-white/5 text-muted-foreground uppercase">{post.status}</span>
+                      </div>
+                      <h4 className="font-display text-base font-bold text-white leading-snug line-clamp-2">{post.title}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-3">{post.excerpt}</p>
+                    </div>
+                  </div>
+                  <div className="p-5 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">{post.date}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => startEdit(post)}
+                        className="p-1.5 hover:text-white text-muted-foreground cursor-pointer transition-colors"
+                        title="Edit Post"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="p-1.5 hover:text-red-400 text-muted-foreground cursor-pointer transition-colors"
+                        title="Delete Post"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

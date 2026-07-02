@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SectionHeading } from "@/components/site/ui-bits";
 import { CTASection } from "@/components/site/CTASection";
 import { InquiryForm } from "@/components/site/InquiryForm";
@@ -7,6 +7,8 @@ import { type PortfolioCategory } from "@/lib/site-data";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useSiteData } from "@/hooks/use-site-data";
+import { Play } from "lucide-react";
+import { VideoWatermark } from "@/components/site/VideoWatermark";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -43,6 +45,22 @@ function PortfolioPage() {
   const [active, setActive] = useState<(typeof portfolio)[number] | null>(null);
   const publishedItems = portfolio.filter((p) => p.status !== "draft");
   const items = filter === "All" ? publishedItems : publishedItems.filter((p) => p.category === filter);
+
+  useEffect(() => {
+    if (active) {
+      document.title = active.metaTitle || `${active.title} — Portfolio — The Arts Folio`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", active.metaDescription || active.description);
+      }
+    } else {
+      document.title = "Portfolio — The Arts Folio";
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", "Recent commissioned book covers, fantasy maps, character art, branding and web work crafted by The Arts Folio.");
+      }
+    }
+  }, [active]);
 
   return (
     <>
@@ -88,18 +106,23 @@ function PortfolioPage() {
                 className="group relative block w-full break-inside-avoid overflow-hidden rounded-3xl glass hover-lift cursor-pointer text-left"
               >
                 {p.mediaType === "video" ? (
-                  <video
-                    src={p.videoUrl}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                    className="w-full transition-transform duration-700 group-hover:scale-110"
-                  />
+                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <img
+                      src={p.image}
+                      alt={p.imageAlt || p.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                      <div className="h-14 w-14 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
+                        <Play className="h-6 w-6 text-white fill-white ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <img
                     src={p.image}
-                    alt={p.title}
+                    alt={p.imageAlt || p.title}
                     loading="lazy"
                     className="w-full transition-transform duration-700 group-hover:scale-110"
                   />
@@ -123,16 +146,19 @@ function PortfolioPage() {
             <div className="grid md:grid-cols-2">
               <div className="relative bg-black/20 flex items-center justify-center">
                 {active.mediaType === "video" ? (
-                  <video
-                    src={active.videoUrl}
-                    controls
-                    autoPlay
-                    className="w-full h-full object-cover max-h-[80vh]"
-                  />
+                  <div className="relative w-full h-full flex items-center justify-center bg-black/40 min-h-[300px] md:min-h-[450px]">
+                    <video
+                      src={active.videoUrl}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-contain max-h-[80vh]"
+                    />
+                    <VideoWatermark />
+                  </div>
                 ) : (
                   <img
                     src={active.image}
-                    alt={active.title}
+                    alt={active.imageAlt || active.title}
                     className="w-full h-full object-cover max-h-[80vh]"
                   />
                 )}

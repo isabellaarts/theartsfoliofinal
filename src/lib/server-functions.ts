@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { Artist, PortfolioItem, GlobalReview, UserAccount, InteractiveGalleryItem, SiteConfig } from "./site-data";
+import type { Artist, PortfolioItem, GlobalReview, UserAccount, InteractiveGalleryItem, SiteConfig, BlogPost } from "./site-data";
 import { resolveImageUrl } from "./site-data";
 import { readDb, writeDb, hashPassword, verifyPassword } from "./db";
 
@@ -29,6 +29,11 @@ export const getSiteData = createServerFn({ method: "GET" })
         afterImage: resolveImageUrl(item.afterImage),
       }));
 
+      const blogs = (db.blogs || []).map(post => ({
+        ...post,
+        image: resolveImageUrl(post.image),
+      }));
+
       return {
         success: true,
         team,
@@ -44,6 +49,7 @@ export const getSiteData = createServerFn({ method: "GET" })
         })),
         interactiveGallery,
         siteConfig: db.siteConfig || null,
+        blogs,
       };
     } catch (error: any) {
       console.error("Server function getSiteData error:", error);
@@ -404,6 +410,51 @@ export const deleteGalleryItem = createServerFn({ method: "POST" })
     } catch (error: any) {
       console.error("Server function deleteGalleryItem error:", error);
       return { success: false, message: error.message || "Failed to delete gallery item" };
+    }
+  });
+
+// Add or update a blog post
+export const saveBlogPost = createServerFn({ method: "POST" })
+  .validator(z.any())
+  .handler(async ({ data: post }) => {
+    try {
+      const db = await readDb();
+      if (!db.blogs) db.blogs = [];
+      const index = db.blogs.findIndex((b) => b.id === post.id);
+      
+      const resolvedPost = {
+        ...post,
+        id: post.id || `blog_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`
+      };
+
+      if (index >= 0) {
+        db.blogs[index] = resolvedPost;
+      } else {
+        db.blogs.push(resolvedPost);
+      }
+      
+      await writeDb(db);
+      return { success: true, post: { ...resolvedPost, image: resolveImageUrl(resolvedPost.image) } };
+    } catch (error: any) {
+      console.error("Server function saveBlogPost error:", error);
+      return { success: false, message: error.message || "Failed to save blog post" };
+    }
+  });
+
+// Delete a blog post
+export const deleteBlogPost = createServerFn({ method: "POST" })
+  .validator(z.string())
+  .handler(async ({ data: id }) => {
+    try {
+      const db = await readDb();
+      if (db.blogs) {
+        db.blogs = db.blogs.filter((b) => b.id !== id);
+        await writeDb(db);
+      }
+      return { success: true };
+    } catch (error: any) {
+      console.error("Server function deleteBlogPost error:", error);
+      return { success: false, message: error.message || "Failed to delete blog post" };
     }
   });
 
