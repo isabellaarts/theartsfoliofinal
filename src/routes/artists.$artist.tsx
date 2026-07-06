@@ -504,15 +504,15 @@ function ArtistPage() {
               <p className="text-muted-foreground">No portfolio work published yet.</p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
               {items.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setActiveItem(p)}
-                  className="group relative block w-full aspect-square overflow-hidden rounded-3xl glass hover-lift cursor-pointer text-left"
+                  className="group relative block w-full break-inside-avoid overflow-hidden rounded-3xl glass hover-lift cursor-pointer text-left"
                 >
                   {p.mediaType === "video" ? (
-                    <div className="relative w-full h-full overflow-hidden bg-black/20">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/20">
                       {/* Blurred background */}
                       <img
                         src={p.image}
@@ -535,25 +535,18 @@ function ArtistPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="relative w-full h-full overflow-hidden bg-black/20">
-                      {/* Blurred background */}
-                      <img
-                        src={p.image}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-105 pointer-events-none"
-                      />
-                      {/* Foreground uncropped image */}
+                    <div className="relative w-full overflow-hidden bg-black/20">
                       <img
                         src={p.image}
                         alt={p.imageAlt || p.title}
                         loading="lazy"
-                        className="relative z-5 w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                        className="relative z-5 w-full transition-transform duration-700 group-hover:scale-[1.02]"
                       />
                       <MediaWatermark />
                       <ImageProtector />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-5">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-5 z-30">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-brand-pink">{p.category}</p>
                     <h4 className="mt-1 font-display text-lg font-bold text-white leading-tight">{p.title}</h4>
                     <span className="mt-2 inline-block text-[10px] font-semibold rounded-full bg-white/10 backdrop-blur px-2.5 py-0.5 text-white w-fit">

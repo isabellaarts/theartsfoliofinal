@@ -140,7 +140,7 @@ function PortfolioPage() {
                     <ImageProtector />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6 z-30">
                   <p className="text-xs uppercase tracking-[0.2em] text-brand-pink">{p.category}</p>
                   <h3 className="mt-1 font-display text-xl font-bold text-white">{p.title}</h3>
                   <span className="mt-3 inline-block text-xs font-semibold rounded-full bg-white/10 backdrop-blur px-3 py-1 w-fit text-white">
