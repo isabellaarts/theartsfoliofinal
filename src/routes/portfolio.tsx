@@ -162,11 +162,18 @@ function PortfolioPage() {
                     <VideoWatermark />
                   </div>
                 ) : (
-                  <div className="relative w-full h-full">
+                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black/40 min-h-[300px] md:min-h-[450px]">
+                    {/* Blurred background */}
+                    <img
+                      src={active.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-105 pointer-events-none"
+                    />
+                    {/* Foreground object-contain image */}
                     <img
                       src={active.image}
                       alt={active.imageAlt || active.title}
-                      className="w-full h-full object-cover max-h-[80vh]"
+                      className="relative z-5 w-full h-full object-contain max-h-[80vh]"
                     />
                     <MediaWatermark />
                     <ImageProtector />

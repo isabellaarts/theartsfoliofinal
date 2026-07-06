@@ -1845,10 +1845,73 @@ function ReviewsPanel() {
   const [isCreating, setIsCreating] = useState(false);
 
   const [formData, setFormData] = useState<Partial<any>>({});
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   // If user is artist, show only reviews assigned to them.
   // Reviews in TEAM artist lists are handled here
   const isArtist = user?.role === "artist";
+
+  const uploadMediaFile = async (file: File): Promise<string> => {
+    setUploading(true);
+    const toastId = toast.loading("Uploading screenshot...");
+    try {
+      const uFormData = new FormData();
+      uFormData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uFormData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to upload file");
+      }
+
+      const data = await res.json();
+      toast.success("Screenshot uploaded successfully!", { id: toastId });
+      return data.url;
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload file", { id: toastId });
+      throw err;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await uploadMediaFile(file);
+      setFormData((prev) => ({ ...prev, screenshotUrl: url }));
+    } catch (err) {}
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDropUpload = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      try {
+        const url = await uploadMediaFile(file);
+        setFormData((prev) => ({ ...prev, screenshotUrl: url }));
+      } catch (err) {}
+    }
+  };
 
   const startEdit = (review: any) => {
     setEditingReview(review);
@@ -1865,6 +1928,8 @@ function ReviewsPanel() {
       country: "",
       rating: 5,
       text: "",
+      screenshotUrl: "",
+      screenshotType: "",
     });
   };
 
@@ -1922,7 +1987,9 @@ function ReviewsPanel() {
       name: formData.name || "Happy Client",
       country: formData.country || "United States",
       rating: Number(formData.rating) || 5,
-      text: formData.text || ""
+      text: formData.text || "",
+      screenshotUrl: formData.screenshotUrl || "",
+      screenshotType: formData.screenshotType || "",
     };
 
     if (isCreating) {
@@ -1995,10 +2062,80 @@ function ReviewsPanel() {
               />
             </div>
 
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">
+                  Client Message Screenshot (Optional)
+                </label>
+                <div
+                  onDragEnter={handleDrag}
+                  onDragOver={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDrop={handleDropUpload}
+                  className={cn(
+                    "relative border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-colors min-h-[140px]",
+                    dragActive ? "border-brand-pink bg-brand-pink/5" : "border-white/10 hover:border-white/20 bg-white/5"
+                  )}
+                >
+                  {formData.screenshotUrl ? (
+                    <div className="relative group w-full h-[100px] rounded-lg overflow-hidden border border-white/10 flex items-center justify-center bg-black/20">
+                      <img src={formData.screenshotUrl} alt="Screenshot Preview" className="h-full max-w-full object-contain" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, screenshotUrl: "", screenshotType: "" }))}
+                          className="px-2.5 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-[10px] font-semibold transition-colors cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                        <p className="text-[10px] text-white/80">or drop to replace</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                      <p className="text-xs text-white font-semibold">Drag & drop screenshot or</p>
+                      <label className="mt-2 inline-flex items-center gap-1.5 cursor-pointer rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-[11px] text-white hover:bg-white/10">
+                        Select File
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleScreenshotUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">
+                  Screenshot Platform Type
+                </label>
+                <select
+                  disabled={!formData.screenshotUrl}
+                  value={formData.screenshotType || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, screenshotType: e.target.value }))}
+                  className="w-full rounded-xl bg-surface-2 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">-- Select Platform --</option>
+                  <option value="Messenger">Messenger</option>
+                  <option value="Discord">Discord</option>
+                  <option value="Email">Email</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="Other">Other</option>
+                </select>
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  Platform label displayed as a badge on the review. Disabled unless a screenshot is uploaded.
+                </p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Review Body Text</label>
               <textarea
-                required
+                required={!formData.screenshotUrl}
                 rows={3}
                 value={formData.text || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, text: e.target.value }))}
@@ -2080,12 +2217,24 @@ function ReviewsPanel() {
               reviews.map((r: any) => (
                 <GlassCard key={r.id || r.text} className="flex flex-col justify-between">
                   <div>
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: r.rating }).map((_, j) => (
-                        <Star key={j} className="h-3.5 w-3.5 fill-brand-pink text-brand-pink" />
-                      ))}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: r.rating }).map((_, j) => (
+                          <Star key={j} className="h-3.5 w-3.5 fill-brand-pink text-brand-pink" />
+                        ))}
+                      </div>
+                      {r.screenshotUrl && (
+                        <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-pink/15 text-brand-pink border border-brand-pink/20">
+                          {r.screenshotType || "Screenshot"}
+                        </span>
+                      )}
                     </div>
-                    <p className="mt-3 text-sm text-foreground leading-relaxed">"{r.text}"</p>
+                    {r.screenshotUrl && (
+                      <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-white/5 bg-black/20 mb-3">
+                        <img src={r.screenshotUrl} alt="Review Screenshot" className="w-full h-full object-contain" />
+                      </div>
+                    )}
+                    {r.text && <p className="text-sm text-foreground leading-relaxed">"{r.text}"</p>}
                     <p className="text-xs text-muted-foreground mt-3 font-semibold">
                       {r.name} · {r.country}
                     </p>

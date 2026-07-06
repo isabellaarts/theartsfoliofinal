@@ -409,40 +409,50 @@ function ArtistPage() {
 
       {/* Before & After + Process Videos Showcase */}
       <section className="py-16 bg-surface-2/30">
-        <div className="mx-auto max-w-6xl px-5 lg:px-10 grid md:grid-cols-2 gap-8 items-center">
-          <div>
-            <h3 className="font-display text-3xl font-bold mb-4">{showcaseTitle}</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              {showcaseDescription}
-            </p>
-            <BeforeAfterSlider
-              beforeImage={beforeImg}
-              afterImage={afterImg}
-              beforeLabel={beforeLabel}
-              afterLabel={afterLabel}
-            />
+        <div className="mx-auto max-w-6xl px-5 lg:px-10">
+          {/* Header Row */}
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h3 className="font-display text-3xl font-bold mb-3">{showcaseTitle}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {showcaseDescription}
+              </p>
+            </div>
+            <div>
+              <h3 className="font-display text-3xl font-bold mb-3">{processVideoTitle}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {processVideoDescription}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-display text-3xl font-bold mb-4">{processVideoTitle}</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              {processVideoDescription}
-            </p>
-            <div 
-              onClick={() => setIsProcessVideoOpen(true)}
-              className="relative overflow-hidden rounded-3xl border border-white/10 aspect-[4/3] bg-black/40 group cursor-pointer"
-            >
-              <video
-                src={videoUrl}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+
+          {/* Media items height-aligned row */}
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            <div className="flex flex-col h-full min-h-[300px] md:min-h-[450px]">
+              <BeforeAfterSlider
+                beforeImage={beforeImg}
+                afterImage={afterImg}
+                beforeLabel={beforeLabel}
+                afterLabel={afterLabel}
+                className="w-full h-full flex-grow"
               />
-              <VideoWatermark />
-              <div className="absolute inset-0 bg-black/25 flex items-center justify-center transition-all duration-300 group-hover:bg-black/35 z-20">
-                <div className="h-16 w-16 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
-                  <Play className="h-7 w-7 text-white fill-white ml-1" />
+            </div>
+            <div className="flex flex-col h-full min-h-[300px] md:min-h-[450px]">
+              <div 
+                onClick={() => setIsProcessVideoOpen(true)}
+                className="relative overflow-hidden rounded-3xl border border-white/10 w-full h-full flex-grow bg-black/40 group cursor-pointer flex items-center justify-center"
+              >
+                <img
+                  src={artist.showcaseAfterImg || afterImg}
+                  alt={processVideoTitle}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <MediaWatermark />
+                <ImageProtector />
+                <div className="absolute inset-0 bg-black/35 flex items-center justify-center transition-all duration-300 group-hover:bg-black/45 z-20">
+                  <div className="h-16 w-16 rounded-full bg-white text-brand-violet flex items-center justify-center shadow-glow animate-pulse-scale hover:scale-110 transition-all duration-300 z-30">
+                    <Play className="h-7 w-7 text-brand-violet fill-brand-violet ml-1" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -560,11 +570,18 @@ function ArtistPage() {
                     <VideoWatermark />
                   </div>
                 ) : (
-                  <div className="relative w-full h-full">
+                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black/40 min-h-[300px] md:min-h-[450px]">
+                    {/* Blurred background */}
+                    <img
+                      src={activeItem.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-105 pointer-events-none"
+                    />
+                    {/* Foreground object-contain image */}
                     <img
                       src={activeItem.image}
                       alt={activeItem.imageAlt || activeItem.title}
-                      className="w-full h-full object-cover max-h-[80vh]"
+                      className="relative z-5 w-full h-full object-contain max-h-[80vh]"
                     />
                     <MediaWatermark />
                     <ImageProtector />

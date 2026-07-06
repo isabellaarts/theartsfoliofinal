@@ -1117,11 +1117,14 @@ export interface Submission {
 }
 
 export interface GlobalReview {
+  id?: string;
   name: string;
   country: string;
   text: string;
   rating: number;
   requestedRemoval?: boolean; // added flag for artist reviews request
+  screenshotUrl?: string;
+  screenshotType?: string;
 }
 
 export interface UserAccount {

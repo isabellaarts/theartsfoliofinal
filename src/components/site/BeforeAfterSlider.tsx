@@ -58,6 +58,8 @@ export function BeforeAfterSlider({
     }
   };
 
+  const hasCustomAspect = className?.split(" ").some(c => c.startsWith("aspect-") || c.startsWith("h-") || c.startsWith("min-h-") || c.startsWith("max-h-"));
+
   return (
     <div
       ref={containerRef}
@@ -65,25 +67,38 @@ export function BeforeAfterSlider({
       onTouchMove={onTouchMove}
       className={cn(
         "relative select-none overflow-hidden rounded-3xl cursor-ew-resize border border-white/10 group shadow-glow bg-black/40 flex items-center justify-center",
-        aspectRatio,
+        !hasCustomAspect && aspectRatio,
         className,
       )}
     >
-      {/* After image (background) */}
+      {/* After image blurred background */}
+      <img
+        src={afterImage}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-105 pointer-events-none"
+      />
+      {/* After image (foreground) */}
       <img
         src={afterImage}
         alt={afterLabel}
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
       />
       <span className="absolute bottom-4 right-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-20 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
         {afterLabel}
       </span>
 
-      {/* Before image (clipped overlay) */}
+      {/* Before image blurred background */}
+      <img
+        src={beforeImage}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-105 pointer-events-none"
+        style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}
+      />
+      {/* Before image (foreground) */}
       <img
         src={beforeImage}
         alt={beforeLabel}
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
         style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}
       />
       <span className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-20 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
