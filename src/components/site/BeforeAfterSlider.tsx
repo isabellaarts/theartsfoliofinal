@@ -81,7 +81,7 @@ export function BeforeAfterSlider({
       <img
         src={afterImage}
         alt={afterLabel}
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-5"
       />
       <span className="absolute bottom-4 right-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-20 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
         {afterLabel}
@@ -98,7 +98,7 @@ export function BeforeAfterSlider({
       <img
         src={beforeImage}
         alt={beforeLabel}
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-5"
         style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}
       />
       <span className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-20 transition-opacity duration-300 group-hover:opacity-100 opacity-60">

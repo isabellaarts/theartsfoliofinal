@@ -13,7 +13,7 @@ export function VideoWatermark() {
   );
 }
 
-export function MediaWatermark({ opacity = 0.04 }: { opacity?: number }) {
+export function MediaWatermark({ opacity = 0.18 }: { opacity?: number }) {
   const svgString = `
     <svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220">
       <text 

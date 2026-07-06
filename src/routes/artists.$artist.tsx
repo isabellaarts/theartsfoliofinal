@@ -512,12 +512,19 @@ function ArtistPage() {
                   className="group relative block w-full aspect-square overflow-hidden rounded-3xl glass hover-lift cursor-pointer text-left"
                 >
                   {p.mediaType === "video" ? (
-                    <div className="relative w-full h-full overflow-hidden">
+                    <div className="relative w-full h-full overflow-hidden bg-black/20">
+                      {/* Blurred background */}
+                      <img
+                        src={p.image}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-105 pointer-events-none"
+                      />
+                      {/* Foreground uncropped image */}
                       <img
                         src={p.image}
                         alt={p.imageAlt || p.title}
                         loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="relative z-5 w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                       />
                       <MediaWatermark />
                       <ImageProtector />
@@ -528,12 +535,19 @@ function ArtistPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="relative w-full h-full overflow-hidden">
+                    <div className="relative w-full h-full overflow-hidden bg-black/20">
+                      {/* Blurred background */}
+                      <img
+                        src={p.image}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-105 pointer-events-none"
+                      />
+                      {/* Foreground uncropped image */}
                       <img
                         src={p.image}
                         alt={p.imageAlt || p.title}
                         loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="relative z-5 w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                       />
                       <MediaWatermark />
                       <ImageProtector />

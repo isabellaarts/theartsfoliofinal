@@ -106,12 +106,19 @@ function PortfolioPage() {
                 className="group relative block w-full break-inside-avoid overflow-hidden rounded-3xl glass hover-lift cursor-pointer text-left"
               >
                 {p.mediaType === "video" ? (
-                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/20">
+                    {/* Blurred background */}
+                    <img
+                      src={p.image}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-105 pointer-events-none"
+                    />
+                    {/* Foreground uncropped image */}
                     <img
                       src={p.image}
                       alt={p.imageAlt || p.title}
                       loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="relative z-5 w-full h-full object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                     />
                     <MediaWatermark />
                     <ImageProtector />
@@ -122,12 +129,12 @@ function PortfolioPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="relative w-full overflow-hidden">
+                  <div className="relative w-full overflow-hidden bg-black/20">
                     <img
                       src={p.image}
                       alt={p.imageAlt || p.title}
                       loading="lazy"
-                      className="w-full transition-transform duration-700 group-hover:scale-110"
+                      className="relative z-5 w-full transition-transform duration-700 group-hover:scale-[1.02]"
                     />
                     <MediaWatermark />
                     <ImageProtector />
