@@ -23,7 +23,7 @@ import {
   Lock,
   Play,
 } from "lucide-react";
-import { VideoWatermark } from "@/components/site/VideoWatermark";
+import { VideoWatermark, MediaWatermark, ImageProtector } from "@/components/site/VideoWatermark";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -231,13 +231,14 @@ function ArtistPage() {
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-gradient-brand rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
             
             {/* Artist Profile Photo with premium circular styling and glow */}
-            <div className="relative mx-auto w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-pink mb-6 shadow-glow hover:scale-105 transition-transform duration-500">
+            <div className="relative mx-auto w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-brand-indigo via-brand-violet to-brand-pink mb-6 shadow-glow hover:scale-105 transition-transform duration-500 overflow-hidden">
               <img
                 src={artist.image}
                 alt={artist.name}
                 className="w-full h-full rounded-full object-cover border-2 border-background"
               />
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center shadow-glow border border-background">
+              <ImageProtector />
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center shadow-glow border border-background z-30">
                 <Lock className="h-4 w-4 text-white" />
               </div>
             </div>
@@ -318,6 +319,8 @@ function ArtistPage() {
                 alt={artist.name}
                 className="w-full aspect-[3/4] object-cover"
               />
+              <MediaWatermark />
+              <ImageProtector />
             </div>
             <div>
               <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-brand-pink">
@@ -436,7 +439,8 @@ function ArtistPage() {
                 playsInline
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/25 flex items-center justify-center transition-all duration-300 group-hover:bg-black/35">
+              <VideoWatermark />
+              <div className="absolute inset-0 bg-black/25 flex items-center justify-center transition-all duration-300 group-hover:bg-black/35 z-20">
                 <div className="h-16 w-16 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
                   <Play className="h-7 w-7 text-white fill-white ml-1" />
                 </div>
@@ -505,19 +509,25 @@ function ArtistPage() {
                         loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                        <div className="h-12 w-12 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
-                          <Play className="h-5 w-5 text-white fill-white ml-0.5" />
+                      <MediaWatermark />
+                      <ImageProtector />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/25 pointer-events-none z-20">
+                        <div className="h-12 w-12 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300 pointer-events-none">
+                          <Play className="h-5 w-5 text-white fill-white ml-0.5 pointer-events-none" />
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <img
-                      src={p.image}
-                      alt={p.imageAlt || p.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
+                    <div className="relative w-full h-full overflow-hidden">
+                      <img
+                        src={p.image}
+                        alt={p.imageAlt || p.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <MediaWatermark />
+                      <ImageProtector />
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-5">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-brand-pink">{p.category}</p>
@@ -550,11 +560,15 @@ function ArtistPage() {
                     <VideoWatermark />
                   </div>
                 ) : (
-                  <img
-                    src={activeItem.image}
-                    alt={activeItem.imageAlt || activeItem.title}
-                    className="w-full h-full object-cover max-h-[80vh]"
-                  />
+                  <div className="relative w-full h-full">
+                    <img
+                      src={activeItem.image}
+                      alt={activeItem.imageAlt || activeItem.title}
+                      className="w-full h-full object-cover max-h-[80vh]"
+                    />
+                    <MediaWatermark />
+                    <ImageProtector />
+                  </div>
                 )}
               </div>
               <div className="p-8 md:p-10 flex flex-col justify-between">

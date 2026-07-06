@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { MediaWatermark } from "@/components/site/VideoWatermark";
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
@@ -18,6 +19,23 @@ export function BeforeAfterSlider({
 }: BeforeAfterSliderProps) {
   const [sliderPos, setSliderPos] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [aspectRatio, setAspectRatio] = useState<string>("aspect-[4/3]");
+
+  useEffect(() => {
+    if (!afterImage) return;
+    const img = new Image();
+    img.src = afterImage;
+    img.onload = () => {
+      const ratio = img.width / img.height;
+      if (ratio > 1.2) {
+        setAspectRatio("aspect-[16/9]");
+      } else if (ratio < 0.8) {
+        setAspectRatio("aspect-[3/4]");
+      } else {
+        setAspectRatio("aspect-[4/3]");
+      }
+    };
+  }, [afterImage]);
 
   const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
@@ -46,7 +64,8 @@ export function BeforeAfterSlider({
       onMouseMove={onMouseMove}
       onTouchMove={onTouchMove}
       className={cn(
-        "relative select-none overflow-hidden aspect-[4/3] rounded-3xl cursor-ew-resize border border-white/10 group shadow-glow",
+        "relative select-none overflow-hidden rounded-3xl cursor-ew-resize border border-white/10 group shadow-glow bg-black/40 flex items-center justify-center",
+        aspectRatio,
         className,
       )}
     >
@@ -54,9 +73,9 @@ export function BeforeAfterSlider({
       <img
         src={afterImage}
         alt={afterLabel}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
       />
-      <span className="absolute bottom-4 right-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-10 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
+      <span className="absolute bottom-4 right-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-20 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
         {afterLabel}
       </span>
 
@@ -64,16 +83,19 @@ export function BeforeAfterSlider({
       <img
         src={beforeImage}
         alt={beforeLabel}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
         style={{ clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)` }}
       />
-      <span className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-10 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
+      <span className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 z-20 transition-opacity duration-300 group-hover:opacity-100 opacity-60">
         {beforeLabel}
       </span>
 
+      {/* Repeating Diagonal Watermark */}
+      <MediaWatermark />
+
       {/* Slider line separator */}
       <div
-        className="absolute inset-y-0 w-0.5 bg-white z-20 pointer-events-none"
+        className="absolute inset-y-0 w-0.5 bg-white z-30 pointer-events-none"
         style={{ left: `${sliderPos}%` }}
       >
         {/* Drag handle */}
@@ -87,3 +109,4 @@ export function BeforeAfterSlider({
     </div>
   );
 }
+

@@ -201,6 +201,76 @@ function RootComponent() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Prevent context menu (right-click)
+    const handleContextMenu = (e: MouseEvent) => {
+      if (window.location.pathname.startsWith("/admin")) return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      e.preventDefault();
+    };
+
+    // Prevent common developer tool shortcuts
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (window.location.pathname.startsWith("/admin")) return;
+
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+      // F12
+      if (e.key === "F12") {
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+Shift+I / Cmd+Opt+I
+      if (isCmdOrCtrl && e.shiftKey && (e.key === "I" || e.key === "i")) {
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+Shift+J / Cmd+Opt+J
+      if (isCmdOrCtrl && e.shiftKey && (e.key === "J" || e.key === "j")) {
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+U / Cmd+Opt+U (View Source)
+      if (isCmdOrCtrl && (e.key === "U" || e.key === "u")) {
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+S / Cmd+S (Save Page)
+      if (isCmdOrCtrl && (e.key === "S" || e.key === "s")) {
+        e.preventDefault();
+        return;
+      }
+    };
+
+    // Prevent dragging image/video elements
+    const handleDragStart = (e: DragEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "IMG" || target.tagName === "VIDEO")) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("dragstart", handleDragStart);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("dragstart", handleDragStart);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SiteDataProvider>

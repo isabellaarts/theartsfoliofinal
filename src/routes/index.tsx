@@ -38,6 +38,7 @@ import { IMAGES, SERVICES, STATS, DEFAULT_SITE_CONFIG, DEFAULT_INTERACTIVE_GALLE
 import { useSiteData } from "@/hooks/use-site-data";
 import { useLeadModal } from "@/components/site/LeadModalContext";
 import { BeforeAfterSlider } from "@/components/site/BeforeAfterSlider";
+import { VideoWatermark } from "@/components/site/VideoWatermark";
 import { cn } from "@/lib/utils";
 
 import cover1Sketch from "@/assets/cover1-sketch.png";
@@ -509,7 +510,8 @@ function ArtworkCreationTrust() {
                     playsInline
                     className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <VideoWatermark />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20 pointer-events-none" />
                 </div>
                 <div className="p-6">
                   <h4 className="font-display text-lg font-bold text-white">{video.title}</h4>
@@ -617,7 +619,8 @@ function ArtworkCreationTrust() {
                 playsInline
                 className="w-full aspect-[21/9] object-cover opacity-80"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+              <VideoWatermark />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-20 pointer-events-none" />
               <div className="absolute bottom-6 left-6 right-6">
                 <span className="text-xs uppercase tracking-[0.2em] text-brand-pink font-semibold">
                   {activeConfig.featuredTimelapseSection.eyebrow}

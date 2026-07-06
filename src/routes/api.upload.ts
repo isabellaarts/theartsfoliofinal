@@ -87,8 +87,8 @@ export const Route = createFileRoute("/api/upload")({
                 throw new Error(`Supabase Storage upload failed (${uploadRes.status}): ${text}`);
               }
 
-              fileUrl = `${SUPABASE_URL}/storage/v1/object/public/uploads/${uniqueFilename}`;
-              console.log("File uploaded to Supabase Storage. URL:", fileUrl);
+              fileUrl = `/uploads/${uniqueFilename}`;
+              console.log("File uploaded to Supabase Storage fallback active. Local proxy URL:", fileUrl);
             } catch (err: any) {
               console.error("Supabase Storage upload error:", err.message);
             }

@@ -13,11 +13,44 @@ function isSupabaseActive(): boolean {
 export const Route = createFileRoute("/uploads/$filename")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         try {
           const { filename } = params;
           if (!filename) {
             return new Response("Filename is required", { status: 400 });
+          }
+
+          // Protect media files (images, videos) from direct access
+          const ext = path.extname(filename).toLowerCase();
+          const isMedia = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".mp4", ".webm", ".mov"].includes(ext);
+
+          if (isMedia) {
+            const referer = request.headers.get("referer");
+            const host = request.headers.get("host") || "";
+            const isDev = process.env.NODE_ENV === "development";
+            
+            let isValidReferer = false;
+            if (referer) {
+              try {
+                const urlObj = new URL(referer);
+                if (
+                  urlObj.host === host || 
+                  urlObj.host.includes("theartsfolio.com") || 
+                  urlObj.host.includes("render.com") || 
+                  urlObj.host.includes("localhost") || 
+                  urlObj.host.includes("127.0.0.1")
+                ) {
+                  isValidReferer = true;
+                }
+              } catch (e) {}
+            }
+            
+            if (!isValidReferer && !isDev) {
+              return new Response(
+                "Unauthorized direct media access is prohibited. Please view via the official portal.",
+                { status: 403 }
+              );
+            }
           }
 
           // Check possible storage locations
@@ -95,7 +128,6 @@ export const Route = createFileRoute("/uploads/$filename")({
           const fileBuffer = await fs.readFile(filePath);
 
           // Determine MIME type
-          const ext = path.extname(filename).toLowerCase();
           let contentType = "application/octet-stream";
           
           if (ext === ".jpg" || ext === ".jpeg") {

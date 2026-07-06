@@ -8,7 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useSiteData } from "@/hooks/use-site-data";
 import { Play } from "lucide-react";
-import { VideoWatermark } from "@/components/site/VideoWatermark";
+import { VideoWatermark, MediaWatermark, ImageProtector } from "@/components/site/VideoWatermark";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -113,19 +113,25 @@ function PortfolioPage() {
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                      <div className="h-14 w-14 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300">
-                        <Play className="h-6 w-6 text-white fill-white ml-0.5" />
+                    <MediaWatermark />
+                    <ImageProtector />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/25 pointer-events-none z-20">
+                      <div className="h-14 w-14 rounded-full glass border border-white/20 flex items-center justify-center text-white shadow-glow hover:scale-110 hover:bg-white/10 transition-all duration-300 pointer-events-none">
+                        <Play className="h-6 w-6 text-white fill-white ml-0.5 pointer-events-none" />
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <img
-                    src={p.image}
-                    alt={p.imageAlt || p.title}
-                    loading="lazy"
-                    className="w-full transition-transform duration-700 group-hover:scale-110"
-                  />
+                  <div className="relative w-full overflow-hidden">
+                    <img
+                      src={p.image}
+                      alt={p.imageAlt || p.title}
+                      loading="lazy"
+                      className="w-full transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <MediaWatermark />
+                    <ImageProtector />
+                  </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
                   <p className="text-xs uppercase tracking-[0.2em] text-brand-pink">{p.category}</p>
@@ -156,11 +162,15 @@ function PortfolioPage() {
                     <VideoWatermark />
                   </div>
                 ) : (
-                  <img
-                    src={active.image}
-                    alt={active.imageAlt || active.title}
-                    className="w-full h-full object-cover max-h-[80vh]"
-                  />
+                  <div className="relative w-full h-full">
+                    <img
+                      src={active.image}
+                      alt={active.imageAlt || active.title}
+                      className="w-full h-full object-cover max-h-[80vh]"
+                    />
+                    <MediaWatermark />
+                    <ImageProtector />
+                  </div>
                 )}
               </div>
               <div className="p-8 md:p-10 flex flex-col justify-between">
