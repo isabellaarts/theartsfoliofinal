@@ -40,8 +40,8 @@ export function Footer() {
             >
               Request a Custom Quote
             </button>
-            <Link to="/artists" className="inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm font-semibold hover:bg-white/10 transition-colors">
-              Hire an Artist
+            <Link to="/quote" className="inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm font-semibold hover:bg-white/10 transition-colors">
+              Request a Custom Quote
             </Link>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function Footer() {
 
           <FooterCol title="Company" links={[
             { to: "/about", label: "About Us" },
-            { to: "/artists", label: "Our Artists" },
+            // { to: "/artists", label: "Our Artists" },
             { to: "/careers", label: "Careers" },
             { to: "/blog", label: "Blog" },
           ]} />

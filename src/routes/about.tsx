@@ -188,7 +188,7 @@ function AboutPage() {
         description="A senior team, hand-drawn work, transparent process. Let's talk."
         buttons={[
           { label: "Request a Custom Quote", to: "/quote" },
-          { label: "Meet the Artists", to: "/artists", variant: "ghost" },
+          { label: "View Portfolio", to: "/portfolio", variant: "ghost" },
         ]}
       />
     </>

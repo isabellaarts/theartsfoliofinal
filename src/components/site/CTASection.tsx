@@ -26,7 +26,7 @@ export function CTASection({
   description,
   buttons = [
     { label: "Request a Custom Quote", to: "/quote", variant: "primary" },
-    { label: "Hire an Artist", to: "/artists", variant: "ghost" },
+    { label: "Book a Free Consultation", to: "/contact", variant: "ghost" },
   ],
   variant = "gradient",
   className,

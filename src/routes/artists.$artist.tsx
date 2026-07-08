@@ -102,7 +102,7 @@ function ArtistPage() {
   const artist = artists.find((a) => a.slug === loaderArtist.slug) || loaderArtist;
   const isAdmin = user?.role === "admin";
 
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const [enteredCode, setEnteredCode] = useState("");
   const [passcodeError, setPasscodeError] = useState("");
@@ -110,10 +110,8 @@ function ArtistPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== "undefined") {
-      const isUnlocked = localStorage.getItem("arts_folio_unlocked_" + artist.slug) === "true";
-      setUnlocked(isUnlocked);
-    }
+    // Temporarily unlock all profiles by default
+    setUnlocked(true);
   }, [artist.slug]);
 
   const handleUnlock = (e: React.FormEvent) => {

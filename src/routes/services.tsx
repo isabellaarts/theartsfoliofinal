@@ -297,7 +297,6 @@ function ServicesPage() {
         description="Whether you need a bestselling book cover, a fantasy world map, character artwork, branding, or a complete website, The Arts Folio is ready to bring your vision to life."
         buttons={[
           { label: "Request a Custom Quote", to: "/quote" },
-          { label: "Hire an Artist", to: "/artists", variant: "ghost" },
           { label: "Schedule a Consultation", to: "/contact", variant: "ghost" },
         ]}
       />

@@ -159,10 +159,10 @@ function InlineInquiry() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/artists"
-              className="rounded-full glass px-6 py-3 text-sm font-semibold hover:bg-white/10"
+              to="/quote"
+              className="rounded-full bg-gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-glow hover:scale-105 transition-transform"
             >
-              Browse Artists
+              Get Free Quote
             </Link>
             <Link
               to="/portfolio"

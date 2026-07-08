@@ -235,7 +235,7 @@ function PortfolioPage() {
         description="Every project on this page started with a brief just like yours. Tell us about yours."
         buttons={[
           { label: "Request a Custom Quote", to: "/quote" },
-          { label: "Hire an Artist", to: "/artists", variant: "ghost" },
+          { label: "Book a Consultation", to: "/contact", variant: "ghost" },
         ]}
       />
 

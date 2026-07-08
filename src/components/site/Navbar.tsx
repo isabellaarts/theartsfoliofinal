@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { to: "/about", label: "About" },
   { to: "/services", label: "Services" },
   { to: "/portfolio", label: "Portfolio" },
-  { to: "/artists", label: "Artists" },
+  // { to: "/artists", label: "Artists" },
   { to: "/reviews", label: "Reviews" },
   { to: "/careers", label: "Careers" },
   { to: "/blog", label: "Blog" },
