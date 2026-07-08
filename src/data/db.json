@@ -1069,5 +1069,91 @@
     "socialLinks": {
       "instagram": ""
     }
-  }
+  },
+  "blogs": [
+    {
+      "id": "blog_1",
+      "slug": "designing-a-cover-that-sells",
+      "title": "Designing a Cover That Sells (Without Looking Like Everyone Else)",
+      "category": "Cover Design",
+      "excerpt": "Genre conventions exist for a reason — and so does breaking them. Here's the line we walk on every commission.",
+      "image": "/src/assets/portfolio-cover-1.jpg",
+      "imageAlt": "A beautiful illustrated book cover design with gold filigree and dramatic lighting",
+      "date": "May 14, 2026",
+      "status": "published",
+      "metaTitle": "Designing a Cover That Sells | The Arts Folio",
+      "metaDescription": "Learn how we design genre-aware but highly original book covers that stand out on bookshelves.",
+      "content": "\n      <p>This is a sample article placeholder. Real editorial content would live here, written by our team and contributing artists. Each article covers a single craft topic in depth — designed to be read once and referenced often.</p>\n      <p>From sketching genre-aware compositions to mastering character-light, our journal exists to share what we've learned working with hundreds of authors and brands across the world.</p>\n      <h2 class=\"font-display text-2xl font-bold mt-10 mb-4 text-white\">Understanding Genre Expectations</h2>\n      <p>Body copy continues here. Pull quotes, image captions and figure references would all be styled consistently with the site's design system to maintain a calm, premium reading experience.</p>\n      <blockquote class=\"border-l-2 border-brand-pink pl-5 italic text-muted-foreground my-6\">\"The cover sells the book the same way the trailer sells the film — once.\"</blockquote>\n      <p>Replace this placeholder with your real article copy at any time through the Admin Portal.</p>\n    "
+    },
+    {
+      "id": "blog_2",
+      "slug": "fantasy-maps-101",
+      "title": "Fantasy Maps 101: From Continent Sketch to Final Cartography",
+      "category": "Fantasy World Building",
+      "excerpt": "How we build a believable world map, layer by layer — and what we wish more authors knew before commissioning one.",
+      "image": "/src/assets/portfolio-map-1.jpg",
+      "imageAlt": "An intricate vintage fantasy map showing continents and mountain ranges",
+      "date": "April 30, 2026",
+      "status": "published",
+      "metaTitle": "Fantasy Maps 101: Custom Cartography | The Arts Folio",
+      "metaDescription": "Discover how we turn hand-drawn sketches of fantasy worlds into final, high-fidelity fantasy maps.",
+      "content": "\n      <p>This is a sample article placeholder. Real editorial content would live here, written by our team and contributing artists. Each article covers a single craft topic in depth — designed to be read once and referenced often.</p>\n      <h2 class=\"font-display text-2xl font-bold mt-10 mb-4 text-white\">Crafting Realistic Topography</h2>\n      <p>From sketching genre-aware compositions to mastering character-light, our journal exists to share what we've learned working with hundreds of authors and brands across the world.</p>\n      <blockquote class=\"border-l-2 border-brand-pink pl-5 italic text-muted-foreground my-6\">\"A good map makes a fantasy world feel tangible before the reader even turns to page one.\"</blockquote>\n      <p>Replace this placeholder with your real article copy at any time through the Admin Portal.</p>\n    "
+    },
+    {
+      "id": "blog_3",
+      "slug": "ai-vs-human-art",
+      "title": "Why Authors Are Moving Away From AI Art",
+      "category": "Publishing Tips",
+      "excerpt": "Inconsistency, copyright, character drift — the costs of cutting corners. A grounded look at where AI fits, and where it doesn't.",
+      "image": "/src/assets/portfolio-char-2.jpg",
+      "imageAlt": "Detailed conceptual digital illustration of a character highlighting human artistry",
+      "date": "April 12, 2026",
+      "status": "published",
+      "metaTitle": "Why Authors Are Moving Away From AI Art | The Arts Folio",
+      "metaDescription": "Exploring the hidden costs of AI art in publishing and why authors prefer custom human illustration.",
+      "content": "\n      <p>This is a sample article placeholder. Real editorial content would live here, written by our team and contributing artists. Each article covers a single craft topic in depth — designed to be read once and referenced often.</p>\n      <h2 class=\"font-display text-2xl font-bold mt-10 mb-4 text-white\">The Quality and Trademark Challenge</h2>\n      <p>From sketching genre-aware compositions to mastering character-light, our journal exists to share what we've learned working with hundreds of authors and brands across the world.</p>\n      <p>Replace this placeholder with your real article copy at any time through the Admin Portal.</p>\n    "
+    },
+    {
+      "id": "blog_4",
+      "slug": "character-portraits-that-pop",
+      "title": "Character Portraits That Actually Sell Your Series",
+      "category": "Character Art",
+      "excerpt": "Composition, lighting and signature silhouette — what makes a portrait do work for your book and your marketing.",
+      "image": "/src/assets/portfolio-char-1.jpg",
+      "imageAlt": "Stunning character portrait sketch focusing on lighting and high-contrast lines",
+      "date": "March 28, 2026",
+      "status": "published",
+      "metaTitle": "Character Portraits That Sell Books | The Arts Folio",
+      "metaDescription": "Learn how composition, silhouette, and proper lighting make character art a powerful book promo tool.",
+      "content": "\n      <p>This is a sample article placeholder. Real editorial content would live here, written by our team and contributing artists. Each article covers a single craft topic in depth — designed to be read once and referenced often.</p>\n      <h2 class=\"font-display text-2xl font-bold mt-10 mb-4 text-white\">The Power of Silhouette and Lighting</h2>\n      <p>From sketching genre-aware compositions to mastering character-light, our journal exists to share what we've learned working with hundreds of authors and brands across the world.</p>\n      <p>Replace this placeholder with your real article copy at any time through the Admin Portal.</p>\n    "
+    },
+    {
+      "id": "blog_5",
+      "slug": "book-launch-creative-checklist",
+      "title": "The Book Launch Creative Checklist",
+      "category": "Marketing",
+      "excerpt": "Every asset you'll wish you ordered before launch day, in the order we recommend producing them.",
+      "image": "/src/assets/portfolio-social-1.jpg",
+      "imageAlt": "Various author brand promotional assets spread out beautifully",
+      "date": "March 10, 2026",
+      "status": "published",
+      "metaTitle": "The Ultimate Book Launch Creative Checklist | The Arts Folio",
+      "metaDescription": "A complete timeline and checklist of illustrated assets you need to prepare for a successful book launch.",
+      "content": "\n      <p>This is a sample article placeholder. Real editorial content would live here, written by our team and contributing artists. Each article covers a single craft topic in depth — designed to be read once and referenced often.</p>\n      <h2 class=\"font-display text-2xl font-bold mt-10 mb-4 text-white\">Building Visual Assets Before Launch</h2>\n      <p>From sketching genre-aware compositions to mastering character-light, our journal exists to share what we've learned working with hundreds of authors and brands across the world.</p>\n      <p>Replace this placeholder with your real article copy at any time through the Admin Portal.</p>\n    "
+    },
+    {
+      "id": "blog_6",
+      "slug": "brand-systems-for-indie-authors",
+      "title": "Brand Systems for Indie Authors",
+      "category": "Marketing",
+      "excerpt": "Why a coherent author brand is the highest-leverage thing you can build between books.",
+      "image": "/src/assets/portfolio-social-1.jpg",
+      "imageAlt": "Elegant brand system showcasing logos and typography guides",
+      "date": "February 24, 2026",
+      "status": "published",
+      "metaTitle": "Brand Systems for Indie Authors | The Arts Folio",
+      "metaDescription": "Explore why custom branding is critical for indie authors building long-term readerships.",
+      "content": "\n      <p>This is a sample article placeholder. Real editorial content would live here, written by our team and contributing artists. Each article covers a single craft topic in depth — designed to be read once and referenced often.</p>\n      <h2 class=\"font-display text-2xl font-bold mt-10 mb-4 text-white\">Cohesion Across Platforms</h2>\n      <p>From sketching genre-aware compositions to mastering character-light, our journal exists to share what we've learned working with hundreds of authors and brands across the world.</p>\n      <p>Replace this placeholder with your real article copy at any time through the Admin Portal.</p>\n    "
+    }
+  ]
 }

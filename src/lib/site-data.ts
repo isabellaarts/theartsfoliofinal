@@ -739,7 +739,15 @@ export interface Artist {
   bio: string;
   process: string;
   skills: string[];
-  socials: { instagram: string; behance?: string; artstation?: string; linkedin?: string };
+  socials: {
+    instagram?: string;
+    facebook?: string;
+    twitter?: string;
+    linkedin?: string;
+    tiktok?: string;
+    behance?: string;
+    artstation?: string;
+  };
   portfolio: string[];
   reviews: ArtistReview[];
   services: string[]; // service slugs

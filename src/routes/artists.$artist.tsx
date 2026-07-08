@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/accordion";
 import {
   Instagram,
+  Facebook,
+  Twitter,
   ArrowLeft,
   ArrowRight,
   Star,
@@ -359,6 +361,15 @@ function ArtistPage() {
               <div className="mt-6 flex gap-2">
                 {artist.socials?.instagram && (
                   <SocialIcon href={artist.socials.instagram} icon={Instagram} label="Instagram" />
+                )}
+                {artist.socials?.facebook && (
+                  <SocialIcon href={artist.socials.facebook} icon={Facebook} label="Facebook" />
+                )}
+                {artist.socials?.twitter && (
+                  <SocialIcon href={artist.socials.twitter} icon={Twitter} label="Twitter (X)" />
+                )}
+                {artist.socials?.tiktok && (
+                  <SocialIcon href={artist.socials.tiktok} icon={TikTokIcon} label="TikTok" />
                 )}
                 {artist.socials?.behance && (
                   <SocialIcon href={artist.socials.behance} icon={Globe} label="Behance" />
@@ -790,6 +801,20 @@ function ArtistPage() {
     </>
   );
 }
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
 
 function SocialIcon({
   href,

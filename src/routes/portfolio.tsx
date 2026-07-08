@@ -28,22 +28,13 @@ export const Route = createFileRoute("/portfolio")({
   component: PortfolioPage,
 });
 
-const CATEGORIES: ("All" | PortfolioCategory)[] = [
-  "All",
-  "Book Covers",
-  "Fantasy Maps",
-  "Character Art",
-  "Interior Art",
-  "Logos",
-  "Websites",
-  "Social Media",
-];
-
 function PortfolioPage() {
   const { portfolio } = useSiteData();
-  const [filter, setFilter] = useState<"All" | PortfolioCategory>("All");
   const [active, setActive] = useState<(typeof portfolio)[number] | null>(null);
   const publishedItems = portfolio.filter((p) => p.status !== "draft");
+  const [filter, setFilter] = useState<string>("All");
+
+  const categories = ["All", ...Array.from(new Set(publishedItems.map((p) => p.category)))];
   const items = filter === "All" ? publishedItems : publishedItems.filter((p) => p.category === filter);
 
   useEffect(() => {
@@ -82,7 +73,7 @@ function PortfolioPage() {
       <section className="pb-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-10">
           <div className="flex flex-wrap justify-center gap-2 mb-12">
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <button
                 key={c}
                 onClick={() => setFilter(c)}

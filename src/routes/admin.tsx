@@ -709,29 +709,118 @@ function ArtistsPanel() {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Skills (comma-separated)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Concept Art, Digital Painting, Adobe Photoshop"
-                  value={skillsStr}
-                  onChange={(e) => setSkillsStr(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
-                />
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Skills (comma-separated)</label>
+              <input
+                type="text"
+                placeholder="e.g. Concept Art, Digital Painting, Adobe Photoshop"
+                value={skillsStr}
+                onChange={(e) => setSkillsStr(e.target.value)}
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+              />
+            </div>
+
+            {/* Social Media Links Section */}
+            <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.02] space-y-4">
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Social Media Links
+              </label>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">Instagram Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://instagram.com/username"
+                    value={formData.socials?.instagram || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, instagram: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">Facebook Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://facebook.com/username"
+                    value={formData.socials?.facebook || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, facebook: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Instagram Profile URL</label>
-                <input
-                  type="url"
-                  placeholder="https://instagram.com/..."
-                  value={formData.socials?.instagram || ""}
-                  onChange={(e) => setFormData((prev) => ({
-                    ...prev,
-                    socials: { ...prev.socials, instagram: e.target.value } as any
-                  }))}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
-                />
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">X / Twitter Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://x.com/username"
+                    value={formData.socials?.twitter || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, twitter: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">LinkedIn Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://linkedin.com/in/username"
+                    value={formData.socials?.linkedin || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, linkedin: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">TikTok Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://tiktok.com/@username"
+                    value={formData.socials?.tiktok || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, tiktok: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">Behance Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://behance.net/username"
+                    value={formData.socials?.behance || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, behance: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-muted-foreground mb-1 font-medium">ArtStation Profile URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://artstation.com/username"
+                    value={formData.socials?.artstation || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      socials: { ...prev.socials, artstation: e.target.value }
+                    }))}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1220,6 +1309,30 @@ function PortfolioPanel() {
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<PortfolioItem>>({});
   
+  // Custom category states
+  const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+
+  // Gather default and existing categories from the database
+  const defaultCategories = [
+    "Book Covers",
+    "Character Art",
+    "Illustration",
+    "Logo Design",
+    "Branding",
+    "UI/UX Design",
+    "Photography",
+    "Video Editing",
+    "Web Design & Development",
+    "Fantasy Maps",
+    "Interior Art",
+    "Logos",
+    "Websites",
+    "Social Media",
+  ];
+  const existingCategories = Array.from(new Set(portfolio.map((p) => p.category).filter(Boolean)));
+  const allCategories = Array.from(new Set([...defaultCategories, ...existingCategories]));
+
   // Drag and drop for thumbnail / video uploader
   const [dragActive, setDragActive] = useState(false);
 
@@ -1239,6 +1352,8 @@ function PortfolioPanel() {
     setEditingItem(item);
     setFormData(item);
     setIsCreating(false);
+    setShowCustomCategoryInput(false);
+    setCustomCategory("");
   };
 
   const startCreate = () => {
@@ -1258,6 +1373,8 @@ function PortfolioPanel() {
       status: "published",
       order: portfolio.length,
     });
+    setShowCustomCategoryInput(false);
+    setCustomCategory("");
   };
 
   const [uploading, setUploading] = useState(false);
@@ -1433,25 +1550,38 @@ function PortfolioPanel() {
               <div>
                 <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Category</label>
                 <select
-                  value={formData.category}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value as any }))}
+                  value={showCustomCategoryInput ? "__new__" : (formData.category || "")}
+                  onChange={(e) => {
+                    if (e.target.value === "__new__") {
+                      setShowCustomCategoryInput(true);
+                      setFormData((prev) => ({ ...prev, category: "" as any }));
+                    } else {
+                      setShowCustomCategoryInput(false);
+                      setFormData((prev) => ({ ...prev, category: e.target.value as any }));
+                    }
+                  }}
                   className="w-full rounded-xl bg-surface-2 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white cursor-pointer"
                 >
-                  <option value="Book Covers">Book Covers</option>
-                  <option value="Character Art">Character Art</option>
-                  <option value="Illustration">Illustration</option>
-                  <option value="Logo Design">Logo Design</option>
-                  <option value="Branding">Branding</option>
-                  <option value="UI/UX Design">UI/UX Design</option>
-                  <option value="Photography">Photography</option>
-                  <option value="Video Editing">Video Editing</option>
-                  <option value="Web Design & Development">Web Design & Development</option>
-                  <option value="Fantasy Maps">Fantasy Maps</option>
-                  <option value="Interior Art">Interior Art</option>
-                  <option value="Logos">Logos</option>
-                  <option value="Websites">Websites</option>
-                  <option value="Social Media">Social Media</option>
+                  {allCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="__new__">+ Add New Category...</option>
                 </select>
+                {showCustomCategoryInput && (
+                  <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <input
+                      required
+                      type="text"
+                      placeholder="Enter new category name"
+                      value={customCategory}
+                      onChange={(e) => {
+                        setCustomCategory(e.target.value);
+                        setFormData((prev) => ({ ...prev, category: e.target.value as any }));
+                      }}
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
