@@ -55,24 +55,38 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 lg:px-10 h-16 lg:h-20">
-        <Link
-          to={isArtistProfile ? `/artists/${artistSlug}` : "/"}
-          className="flex items-center gap-2 group"
-          onClick={(e) => {
-            setOpen(false);
-            if (isArtistProfile) {
+        {isArtistProfile ? (
+          <Link
+            to="/artists/$artist"
+            params={{ artist: artistSlug }}
+            className="flex items-center gap-2 group"
+            onClick={(e) => {
+              setOpen(false);
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
-            }
-          }}
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand shadow-glow">
-            <Sparkles className="h-5 w-5 text-white" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">
-            {artist ? artist.name : <>The Arts <span className="text-gradient">Folio</span></>}
-          </span>
-        </Link>
+            }}
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand shadow-glow">
+              <Sparkles className="h-5 w-5 text-white" />
+            </span>
+            <span className="font-display text-lg font-bold tracking-tight">
+              {artist ? artist.name : "The Arts Folio"}
+            </span>
+          </Link>
+        ) : (
+          <Link
+            to="/"
+            className="flex items-center gap-2 group"
+            onClick={() => setOpen(false)}
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-brand shadow-glow">
+              <Sparkles className="h-5 w-5 text-white" />
+            </span>
+            <span className="font-display text-lg font-bold tracking-tight">
+              The Arts <span className="text-gradient">Folio</span>
+            </span>
+          </Link>
+        )}
 
         <nav className="hidden lg:flex items-center gap-1">
           {links ? (

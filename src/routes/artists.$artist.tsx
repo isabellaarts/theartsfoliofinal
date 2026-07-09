@@ -5,6 +5,7 @@ import { CTASection } from "@/components/site/CTASection";
 import { InquiryForm } from "@/components/site/InquiryForm";
 import { getSiteData } from "@/lib/server-functions";
 import { useSiteData } from "@/hooks/use-site-data";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,

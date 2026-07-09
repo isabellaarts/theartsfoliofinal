@@ -74,22 +74,35 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-5 lg:px-10 py-16">
         <div className="grid gap-12 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <Link
-              to={artist ? `/artists/${artist.slug}` : "/"}
-              className="flex items-center gap-2"
-              onClick={() => {
-                if (artist) {
+            {artist ? (
+              <Link
+                to="/artists/$artist"
+                params={{ artist: artist.slug }}
+                className="flex items-center gap-2"
+                onClick={() => {
                   window.scrollTo({ top: 0, behavior: "smooth" });
-                }
-              }}
-            >
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-brand">
-                <Sparkles className="h-5 w-5 text-white" />
-              </span>
-              <span className="font-display text-xl font-bold">
-                {artist ? artist.name : <>The Arts <span className="text-gradient">Folio</span></>}
-              </span>
-            </Link>
+                }}
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-brand">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </span>
+                <span className="font-display text-xl font-bold">
+                  {artist.name}
+                </span>
+              </Link>
+            ) : (
+              <Link
+                to="/"
+                className="flex items-center gap-2"
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-brand">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </span>
+                <span className="font-display text-xl font-bold">
+                  The Arts <span className="text-gradient">Folio</span>
+                </span>
+              </Link>
+            )}
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">
               {artist
                 ? `${artist.name} is a professional ${artist.role} at The Arts Folio.`
