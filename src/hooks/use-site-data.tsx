@@ -242,7 +242,13 @@ export function SiteDataProvider({ children }: { children: React.ReactNode }) {
   const addReview = async (review: GlobalReview & { id?: string }): Promise<boolean> => {
     const res = await serverSaveReview({ data: review });
     if (res.success) {
-      toast.success("Review added");
+      if (review.status === "pending") {
+        toast.success("Review submitted successfully!", {
+          description: "Your review is pending administrator approval before it will appear.",
+        });
+      } else {
+        toast.success("Review added");
+      }
       await refreshData();
       return true;
     }

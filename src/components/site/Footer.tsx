@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Sparkles, Instagram, Twitter, Facebook, Linkedin, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useLeadModal } from "@/components/site/LeadModalContext";
@@ -9,9 +9,16 @@ import { DEFAULT_SITE_CONFIG } from "@/lib/site-data";
 export function Footer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { openModal } = useLeadModal();
-  const { siteConfig } = useSiteData();
+  const { siteConfig, artists } = useSiteData();
+  const location = useLocation();
 
-  const socialLinks = siteConfig?.socialLinks || DEFAULT_SITE_CONFIG.socialLinks || {};
+  const isArtistProfile = location.pathname.startsWith("/artists/") && location.pathname.split("/").length === 3;
+  const artistSlug = isArtistProfile ? location.pathname.split("/")[2] : null;
+  const artist = isArtistProfile ? artists.find((a) => a.slug === artistSlug) : null;
+
+  const socialLinks = artist
+    ? artist.socials || {}
+    : siteConfig?.socialLinks || DEFAULT_SITE_CONFIG.socialLinks || {};
 
   const socials = [
     { Icon: Instagram, href: socialLinks.instagram, label: "Instagram" },
@@ -28,21 +35,38 @@ export function Footer() {
       <div className="border-b border-white/5">
         <div className="mx-auto max-w-7xl px-5 lg:px-10 py-12 grid lg:grid-cols-[2fr_auto] gap-6 items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-brand-pink">Let's create something memorable</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-brand-pink">
+              {artist ? `Work with ${artist.name} today` : "Let's create something memorable"}
+            </p>
             <h3 className="mt-2 font-display text-2xl md:text-4xl font-bold">
-              Have a project in mind? <span className="text-gradient">Start with a free quote.</span>
+              {artist ? (
+                <>Ready to start? <span className="text-gradient">Send a brief today.</span></>
+              ) : (
+                <>Have a project in mind? <span className="text-gradient">Start with a free quote.</span></>
+              )}
             </h3>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => openModal(null)}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-glow hover:scale-105 transition-transform cursor-pointer"
-            >
-              Request a Custom Quote
-            </button>
-            <Link to="/quote" className="inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm font-semibold hover:bg-white/10 transition-colors">
-              Request a Custom Quote
-            </Link>
+            {artist ? (
+              <a
+                href="#hire"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-glow hover:scale-105 transition-transform cursor-pointer"
+              >
+                Hire This Artist
+              </a>
+            ) : (
+              <>
+                <button
+                  onClick={() => openModal(null)}
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-glow hover:scale-105 transition-transform cursor-pointer"
+                >
+                  Request a Custom Quote
+                </button>
+                <Link to="/quote" className="inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm font-semibold hover:bg-white/10 transition-colors">
+                  Request a Custom Quote
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -50,16 +74,26 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-5 lg:px-10 py-16">
         <div className="grid gap-12 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2">
+            <Link
+              to={artist ? `/artists/${artist.slug}` : "/"}
+              className="flex items-center gap-2"
+              onClick={() => {
+                if (artist) {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+            >
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-brand">
                 <Sparkles className="h-5 w-5 text-white" />
               </span>
               <span className="font-display text-xl font-bold">
-                The Arts <span className="text-gradient">Folio</span>
+                {artist ? artist.name : <>The Arts <span className="text-gradient">Folio</span></>}
               </span>
             </Link>
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-              A premium art & design studio crafting visual masterpieces for authors, publishers and brands worldwide.
+              {artist
+                ? `${artist.name} is a professional ${artist.role} at The Arts Folio.`
+                : "A premium art & design studio crafting visual masterpieces for authors, publishers and brands worldwide."}
             </p>
             <form
               onSubmit={async (e) => {
@@ -91,7 +125,7 @@ export function Footer() {
             >
               <div className="relative flex-1">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                 <input
+                <input
                   required
                   type="email"
                   name="email"
@@ -108,30 +142,89 @@ export function Footer() {
             </form>
           </div>
 
-          <FooterCol title="Company" links={[
-            { to: "/about", label: "About Us" },
-            // { to: "/artists", label: "Our Artists" },
-            { to: "/careers", label: "Careers" },
-            { to: "/blog", label: "Blog" },
-          ]} />
-          <FooterCol title="Services" links={[
-            { to: "/services", label: "Book Covers" },
-            { to: "/services", label: "Fantasy Maps" },
-            { to: "/services", label: "Character Art" },
-            { to: "/services", label: "Branding" },
-          ]} />
-          <FooterCol title="Resources" links={[
-            { to: "/portfolio", label: "Portfolio" },
-            { to: "/reviews", label: "Reviews" },
-            { to: "/quote", label: "Custom Quote" },
-            { to: "/contact", label: "Contact" },
-          ]} />
-          <FooterCol title="Legal" links={[
-            { to: "/privacy", label: "Privacy Policy" },
-            { to: "/terms", label: "Terms & Conditions" },
-            { to: "/refund", label: "Refund Policy" },
-            { to: "/cookies", label: "Cookie Policy" },
-          ]} />
+          {artist ? (
+            <>
+              <div className="lg:col-span-2">
+                <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                  Navigation
+                </h4>
+                <ul className="space-y-2.5">
+                  <li>
+                    <a href="#about" className="text-sm text-muted-foreground hover:text-white transition-colors">About</a>
+                  </li>
+                  {artist.services && artist.services.length > 0 && (
+                    <li>
+                      <a href="#services" className="text-sm text-muted-foreground hover:text-white transition-colors">Services</a>
+                    </li>
+                  )}
+                  <li>
+                    <a href="#portfolio" className="text-sm text-muted-foreground hover:text-white transition-colors">Portfolio</a>
+                  </li>
+                  <li>
+                    <a href="#reviews" className="text-sm text-muted-foreground hover:text-white transition-colors">Reviews</a>
+                  </li>
+                  {artist.pricing && artist.pricing.length > 0 && (
+                    <li>
+                      <a href="#pricing" className="text-sm text-muted-foreground hover:text-white transition-colors">Pricing</a>
+                    </li>
+                  )}
+                  {artist.faqs && artist.faqs.length > 0 && (
+                    <li>
+                      <a href="#faq" className="text-sm text-muted-foreground hover:text-white transition-colors">FAQ</a>
+                    </li>
+                  )}
+                  <li>
+                    <a href="#hire" className="text-sm text-muted-foreground hover:text-white transition-colors">Contact</a>
+                  </li>
+                </ul>
+              </div>
+              <div className="lg:col-span-2">
+                <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-white mb-4">
+                  Legal
+                </h4>
+                <ul className="space-y-2.5">
+                  <li>
+                    <Link to="/privacy" className="text-sm text-muted-foreground hover:text-white transition-colors">Privacy Policy</Link>
+                  </li>
+                  <li>
+                    <Link to="/terms" className="text-sm text-muted-foreground hover:text-white transition-colors">Terms & Conditions</Link>
+                  </li>
+                  <li>
+                    <Link to="/refund" className="text-sm text-muted-foreground hover:text-white transition-colors">Refund Policy</Link>
+                  </li>
+                  <li>
+                    <Link to="/cookies" className="text-sm text-muted-foreground hover:text-white transition-colors">Cookie Policy</Link>
+                  </li>
+                </ul>
+              </div>
+            </>
+          ) : (
+            <>
+              <FooterCol title="Company" links={[
+                { to: "/about", label: "About Us" },
+                { to: "/careers", label: "Careers" },
+                { to: "/blog", label: "Blog" },
+              ]} />
+              <FooterCol title="Services" links={[
+                { to: "/services", label: "Book Covers" },
+                { to: "/services", label: "Fantasy Maps" },
+                { to: "/services", label: "Character Art" },
+                { to: "/services", label: "Branding" },
+              ]} />
+              <FooterCol title="Resources" links={[
+                { to: "/portfolio", label: "Portfolio" },
+                { to: "/reviews", label: "Reviews" },
+                { to: "/quote", label: "Custom Quote" },
+                { to: "/contact", label: "Contact" },
+              ]} />
+              <FooterCol title="Legal" links={[
+                { to: "/privacy", label: "Privacy Policy" },
+                { to: "/terms", label: "Terms & Conditions" },
+                { to: "/refund", label: "Refund Policy" },
+                { to: "/cookies", label: "Cookie Policy" },
+              ]} />
+            </>
+          )}
         </div>
 
         <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-white/5">

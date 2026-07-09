@@ -24,6 +24,8 @@ import {
   Globe,
   Lock,
   Play,
+  Upload,
+  Trash2,
 } from "lucide-react";
 import { VideoWatermark, MediaWatermark, ImageProtector } from "@/components/site/VideoWatermark";
 import { useState, useEffect } from "react";
@@ -183,6 +185,101 @@ function ArtistPage() {
   // Dynamic categories based on actual categories present in this artist's portfolio
   const categoriesList = ["All", ...Array.from(new Set(sortedItems.map((item) => item.category)))];
   const items = filter === "All" ? sortedItems : sortedItems.filter((p) => p.category === filter);
+
+  // Load and merge reviews
+  const { reviews: allReviews, addReview } = useSiteData();
+  const dynamicReviews = allReviews
+    .filter((r) => r.artistSlug === artist.slug && r.status === "approved")
+    .map((r) => ({
+      author: r.name,
+      country: r.country,
+      rating: r.rating,
+      text: r.text,
+      projectName: r.projectName,
+      screenshotUrl: r.screenshotUrl,
+      screenshotType: r.screenshotType,
+    }));
+
+  const combinedReviews = [
+    ...(artist.reviews || []).map((r) => ({
+      author: r.author,
+      country: r.country,
+      rating: r.rating,
+      text: r.text,
+      projectName: "",
+      screenshotUrl: "",
+      screenshotType: "",
+    })),
+    ...dynamicReviews,
+  ];
+
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [clientCountry, setClientCountry] = useState("");
+  const [rating, setRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [screenshotUrl, setScreenshotUrl] = useState("");
+  const [uploadingReviewImg, setUploadingReviewImg] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clientName || !reviewText) {
+      toast.error("Please fill in Name and Review Text.");
+      return;
+    }
+    
+    const finalReview = {
+      artistSlug: artist.slug,
+      status: "pending" as const,
+      name: clientName,
+      projectName: projectName,
+      country: clientCountry || "Client",
+      rating: rating,
+      text: reviewText,
+      screenshotUrl: screenshotUrl || undefined,
+      screenshotType: screenshotUrl ? "Project Image" : undefined,
+    };
+
+    const success = await addReview(finalReview);
+    if (success) {
+      setClientName("");
+      setProjectName("");
+      setClientCountry("");
+      setRating(5);
+      setReviewText("");
+      setScreenshotUrl("");
+      setShowReviewForm(false);
+    }
+  };
+
+  const handleReviewImageUpload = async (file: File) => {
+    setUploadingReviewImg(true);
+    const toastId = toast.loading("Uploading review image...");
+    try {
+      const uFormData = new FormData();
+      uFormData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uFormData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to upload file");
+      }
+
+      const data = await res.json();
+      toast.success("Image uploaded successfully!", { id: toastId });
+      setScreenshotUrl(data.url);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload file", { id: toastId });
+    } finally {
+      setUploadingReviewImg(false);
+    }
+  };
 
   if (!isMounted) {
     return (
@@ -387,7 +484,7 @@ function ArtistPage() {
       </section>
 
       {/* About + Process + Skills */}
-      <section className="py-16">
+      <section id="about" className="py-16 scroll-mt-28">
         <div className="mx-auto max-w-6xl px-5 lg:px-10 grid lg:grid-cols-2 gap-8">
           <GlassCard>
             <h3 className="font-display text-2xl font-bold">Biography</h3>
@@ -484,7 +581,7 @@ function ArtistPage() {
       </section>
 
       {/* Portfolio */}
-      <section className="py-16">
+      <section id="portfolio" className="py-16 scroll-mt-28">
         <div className="mx-auto max-w-7xl px-5 lg:px-10">
           <SectionHeading
             align="left"
@@ -642,9 +739,9 @@ function ArtistPage() {
       </Dialog>
 
       {/* Reviews for this artist */}
-      {artist.reviews && artist.reviews.length > 0 && (
-        <section className="py-16">
-          <div className="mx-auto max-w-7xl px-5 lg:px-10">
+      <section id="reviews" className="py-16 scroll-mt-28">
+        <div className="mx-auto max-w-7xl px-5 lg:px-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <SectionHeading
               align="left"
               eyebrow={`Reviews for ${artist.name.split(" ")[0]}`}
@@ -654,39 +751,254 @@ function ArtistPage() {
                 </>
               }
             />
-            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {artist.reviews.map((r, i) => (
-                <GlassCard key={i}>
-                  <Quote className="h-6 w-6 text-brand-violet" />
-                  <p className="mt-4 text-sm leading-relaxed text-foreground/90">"{r.text}"</p>
-                  <div className="mt-5 flex items-center gap-3 pt-5 border-t border-white/5">
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-brand text-xs font-bold text-white">
-                      {r.author
-                        .split(" ")
-                        .map((n) => n[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{r.author}</p>
-                      <p className="text-xs text-muted-foreground">{r.country}</p>
-                    </div>
-                    <div className="ml-auto flex gap-0.5">
-                      {Array.from({ length: r.rating }).map((_, j) => (
-                        <Star key={j} className="h-3 w-3 fill-brand-pink text-brand-pink" />
+            <button
+              onClick={() => setShowReviewForm(!showReviewForm)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-5 py-3 text-xs font-semibold text-white shadow-glow hover:scale-[1.02] transition-transform cursor-pointer h-fit w-fit"
+            >
+              {showReviewForm ? "Close Review Form" : "Write a Review"}
+            </button>
+          </div>
+
+          {/* Submitted Review Form */}
+          {showReviewForm && (
+            <GlassCard className="p-6 md:p-8 border-white/10 mb-10 relative max-w-2xl mx-auto">
+              <h3 className="font-display text-xl font-bold mb-6 text-white">Share Your Experience</h3>
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Your Name</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Sarah Mitchell"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white focus:ring-1 focus:ring-brand-pink"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Project Name</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. YA Fantasy Novel Cover"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white focus:ring-1 focus:ring-brand-pink"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Your Location / Country</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. United Kingdom"
+                      value={clientCountry}
+                      onChange={(e) => setClientCountry(e.target.value)}
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white focus:ring-1 focus:ring-brand-pink"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Rating</label>
+                    <div className="flex items-center gap-1.5 h-10">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRating(star)}
+                          className="focus:outline-none"
+                        >
+                          <Star
+                            className={cn(
+                              "h-6 w-6 transition-all",
+                              star <= rating
+                                ? "fill-brand-pink text-brand-pink scale-110"
+                                : "text-muted-foreground/40 hover:text-brand-pink/60"
+                            )}
+                          />
+                        </button>
                       ))}
                     </div>
                   </div>
-                </GlassCard>
-              ))}
+                </div>
+
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Review Body Text</label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Tell us about the process, quality of work, and your overall experience..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm focus:outline-none text-white focus:ring-1 focus:ring-brand-pink"
+                  />
+                </div>
+
+                {/* File Upload Zone */}
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1.5 font-medium">
+                    Upload a Project Image / Screenshot (Optional)
+                  </label>
+                  <div
+                    onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+                    onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      setDragActive(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        await handleReviewImageUpload(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    className={cn(
+                      "relative border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-colors min-h-[120px] cursor-pointer",
+                      dragActive ? "border-brand-pink bg-brand-pink/5" : "border-white/10 hover:border-white/20 bg-white/5"
+                    )}
+                  >
+                    {screenshotUrl ? (
+                      <div className="relative group w-full h-[100px] rounded-lg overflow-hidden border border-white/10 flex items-center justify-center bg-black/20">
+                        <img src={screenshotUrl} alt="Screenshot Preview" className="h-full max-w-full object-contain" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setScreenshotUrl("")}
+                            className="px-2.5 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-[10px] font-semibold transition-colors cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                        <p className="text-xs text-white font-semibold">Drag & drop image or</p>
+                        <label className="mt-2 inline-flex items-center gap-1.5 cursor-pointer rounded-xl bg-white/5 border border-white/10 px-3 py-1.5 text-[11px] text-white hover:bg-white/10">
+                          Select File
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) await handleReviewImageUpload(file);
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewForm(false)}
+                    className="rounded-full glass border border-white/10 px-5 py-2.5 text-xs font-semibold hover:bg-white/10 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-gradient-brand px-6 py-2.5 text-xs font-semibold text-white shadow-glow hover:scale-[1.02] transition-transform cursor-pointer"
+                  >
+                    Submit Review
+                  </button>
+                </div>
+              </form>
+            </GlassCard>
+          )}
+
+          {/* Testimonial Cards list */}
+          {combinedReviews.length > 0 ? (
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {combinedReviews.map((r, i) => {
+                const hasScreenshot = !!r.screenshotUrl;
+                return (
+                  <GlassCard key={i} className={cn("flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.01] hover:border-white/20", hasScreenshot ? "p-0" : "")}>
+                    {hasScreenshot ? (
+                      <div className="flex flex-col h-full">
+                        {/* Screenshot Review */}
+                        <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/20 border-b border-white/5 group">
+                          <img
+                            src={r.screenshotUrl}
+                            alt={`Project image review from ${r.author}`}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                          />
+                          <MediaWatermark />
+                          <ImageProtector />
+                        </div>
+                        <div className="p-6 flex flex-col justify-between flex-grow">
+                          <div>
+                            {r.projectName && (
+                              <p className="text-[10px] uppercase font-bold tracking-wider text-brand-pink mb-2">
+                                Project: {r.projectName}
+                              </p>
+                            )}
+                            <p className="text-sm leading-relaxed text-foreground/80 italic mb-5">
+                              "{r.text}"
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3 pt-4 border-t border-white/5 mt-auto">
+                            <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-brand text-xs font-bold text-white">
+                              {r.author
+                                .split(" ")
+                                .map((n) => n[0])
+                                .slice(0, 2)
+                                .join("")}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold">{r.author}</p>
+                              <p className="text-xs text-muted-foreground">{r.country}</p>
+                            </div>
+                            <div className="ml-auto flex gap-0.5">
+                              {Array.from({ length: r.rating }).map((_, j) => (
+                                <Star key={j} className="h-3 w-3 fill-brand-pink text-brand-pink" />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Quote className="h-6 w-6 text-brand-violet" />
+                        <p className="mt-4 text-sm leading-relaxed text-foreground/90">"{r.text}"</p>
+                        <div className="mt-5 flex items-center gap-3 pt-5 border-t border-white/5">
+                          <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-brand text-xs font-bold text-white">
+                            {r.author
+                              .split(" ")
+                              .map((n) => n[0])
+                              .slice(0, 2)
+                              .join("")}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">{r.author}</p>
+                            <p className="text-xs text-muted-foreground">{r.country}</p>
+                          </div>
+                          <div className="ml-auto flex gap-0.5">
+                            {Array.from({ length: r.rating }).map((_, j) => (
+                              <Star key={j} className="h-3 w-3 fill-brand-pink text-brand-pink" />
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </GlassCard>
+                );
+              })}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="text-center py-10 bg-white/[0.02] border border-white/5 rounded-3xl mt-6">
+              <p className="text-muted-foreground text-sm">No reviews yet. Be the first to share your experience!</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Related services */}
       {services.length > 0 && (
-        <section className="py-16">
+        <section id="services" className="py-16 scroll-mt-28">
           <div className="mx-auto max-w-7xl px-5 lg:px-10">
             <SectionHeading
               align="left"
@@ -720,7 +1032,7 @@ function ArtistPage() {
 
       {/* Pricing Section */}
       {artist.pricing && artist.pricing.length > 0 && (
-        <section className="py-16 bg-surface-2/15">
+        <section id="pricing" className="py-16 bg-surface-2/15 scroll-mt-28">
           <div className="mx-auto max-w-7xl px-5 lg:px-10">
             <SectionHeading
               align="left"
@@ -762,7 +1074,7 @@ function ArtistPage() {
 
       {/* FAQ */}
       {artist.faqs && artist.faqs.length > 0 && (
-        <section className="py-16">
+        <section id="faq" className="py-16 scroll-mt-28">
           <div className="mx-auto max-w-3xl px-5 lg:px-10">
             <SectionHeading
               eyebrow="FAQ"

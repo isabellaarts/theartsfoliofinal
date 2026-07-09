@@ -1133,6 +1133,9 @@ export interface GlobalReview {
   requestedRemoval?: boolean; // added flag for artist reviews request
   screenshotUrl?: string;
   screenshotType?: string;
+  artistSlug?: string;
+  status?: "pending" | "approved";
+  projectName?: string;
 }
 
 export interface UserAccount {

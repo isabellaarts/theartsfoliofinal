@@ -2060,6 +2060,9 @@ function ReviewsPanel() {
       text: "",
       screenshotUrl: "",
       screenshotType: "",
+      artistSlug: "",
+      status: "approved",
+      projectName: "",
     });
   };
 
@@ -2120,6 +2123,9 @@ function ReviewsPanel() {
       text: formData.text || "",
       screenshotUrl: formData.screenshotUrl || "",
       screenshotType: formData.screenshotType || "",
+      artistSlug: formData.artistSlug || undefined,
+      status: formData.status || "approved",
+      projectName: formData.projectName || "",
     };
 
     if (isCreating) {
@@ -2180,16 +2186,55 @@ function ReviewsPanel() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Client Country / Location</label>
-              <input
-                required
-                type="text"
-                placeholder="e.g. United Kingdom"
-                value={formData.country || ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, country: e.target.value }))}
-                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
-              />
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Client Country / Location</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. United Kingdom"
+                  value={formData.country || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, country: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Project Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. YA Fantasy Novel Cover"
+                  value={formData.projectName || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, projectName: e.target.value }))}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Artist Assignment</label>
+                <select
+                  value={formData.artistSlug || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, artistSlug: e.target.value || undefined }))}
+                  className="w-full rounded-xl bg-surface-2 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white cursor-pointer"
+                >
+                  <option value="">Global Review (All Profiles)</option>
+                  {artists.map((a) => (
+                    <option key={a.slug} value={a.slug}>{a.name} ({a.role})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1.5 font-medium">Moderation Status</label>
+                <select
+                  value={formData.status || "approved"}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as any }))}
+                  className="w-full rounded-xl bg-surface-2 border border-white/10 px-4 py-2.5 text-sm focus:outline-none text-white cursor-pointer"
+                >
+                  <option value="approved">Approved / Visible</option>
+                  <option value="pending">Pending Approval</option>
+                </select>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -2342,53 +2387,84 @@ function ReviewsPanel() {
 
           {/* Reviews List */}
           <div className="grid md:grid-cols-2 gap-4">
-            {/* Global Reviews */}
+            {/* Global & Artist Reviews */}
             {!isArtist &&
-              reviews.map((r: any) => (
-                <GlassCard key={r.id || r.text} className="flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: r.rating }).map((_, j) => (
-                          <Star key={j} className="h-3.5 w-3.5 fill-brand-pink text-brand-pink" />
-                        ))}
+              reviews.map((r: any) => {
+                const targetArtist = r.artistSlug ? artists.find(a => a.slug === r.artistSlug) : null;
+                const isPending = r.status === "pending";
+                return (
+                  <GlassCard key={r.id || r.text} className={cn("flex flex-col justify-between border-white/10 relative", isPending ? "border-amber-500/40 bg-amber-500/[0.02]" : "")}>
+                    <div>
+                      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+                        <div className="flex gap-0.5">
+                          {Array.from({ length: r.rating }).map((_, j) => (
+                            <Star key={j} className="h-3.5 w-3.5 fill-brand-pink text-brand-pink" />
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {isPending && (
+                            <span className="text-[9px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                              Pending Approval
+                            </span>
+                          )}
+                          <span className="text-[9px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-white/5 text-muted-foreground border border-white/10">
+                            {targetArtist ? `Artist: ${targetArtist.name}` : "Global Studio"}
+                          </span>
+                          {r.screenshotUrl && (
+                            <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-pink/15 text-brand-pink border border-brand-pink/20">
+                              {r.screenshotType || "Screenshot"}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      {r.screenshotUrl && (
-                        <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-brand-pink/15 text-brand-pink border border-brand-pink/20">
-                          {r.screenshotType || "Screenshot"}
-                        </span>
+                      {r.projectName && (
+                        <p className="text-[11px] font-bold text-brand-pink uppercase tracking-wider mb-2">
+                          Project: {r.projectName}
+                        </p>
                       )}
+                      {r.screenshotUrl && (
+                        <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-white/5 bg-black/20 mb-3">
+                          <img src={r.screenshotUrl} alt="Review Screenshot" className="w-full h-full object-contain" />
+                        </div>
+                      )}
+                      {r.text && <p className="text-sm text-foreground leading-relaxed">"{r.text}"</p>}
+                      <p className="text-xs text-muted-foreground mt-3 font-semibold">
+                        {r.name} · {r.country}
+                      </p>
                     </div>
-                    {r.screenshotUrl && (
-                      <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-white/5 bg-black/20 mb-3">
-                        <img src={r.screenshotUrl} alt="Review Screenshot" className="w-full h-full object-contain" />
+                    <div className="flex gap-2 justify-between items-center mt-4 pt-4 border-t border-white/5">
+                      <div>
+                        {isPending && (
+                          <button
+                            onClick={() => updateReview(r.id, { ...r, status: "approved" })}
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/30 transition-colors cursor-pointer"
+                          >
+                            <Check className="h-3 w-3" /> Approve
+                          </button>
+                        )}
                       </div>
-                    )}
-                    {r.text && <p className="text-sm text-foreground leading-relaxed">"{r.text}"</p>}
-                    <p className="text-xs text-muted-foreground mt-3 font-semibold">
-                      {r.name} · {r.country}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 justify-end mt-4 pt-4 border-t border-white/5">
-                    <button
-                      onClick={() => startEdit(r)}
-                      className="inline-flex items-center gap-1 rounded-full glass border border-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10 cursor-pointer"
-                    >
-                      <Edit2 className="h-3 w-3" /> Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm("Remove review?")) {
-                          deleteReview(r.id || r.text);
-                        }
-                      }}
-                      className="grid h-8 w-8 place-items-center rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 cursor-pointer"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </GlassCard>
-              ))}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(r)}
+                          className="inline-flex items-center gap-1 rounded-full glass border border-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/10 cursor-pointer"
+                        >
+                          <Edit2 className="h-3 w-3" /> Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm("Remove review?")) {
+                              deleteReview(r.id || r.text);
+                            }
+                          }}
+                          className="grid h-8 w-8 place-items-center rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 cursor-pointer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </GlassCard>
+                );
+              })}
 
             {/* Artist specific Reviews (Artist dashboard view) */}
             {isArtist &&
